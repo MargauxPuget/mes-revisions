@@ -1,76 +1,381 @@
 <!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#e8f1e7">
-  <title>Mes révisions — Mon jardin de révisions</title>
-  <link rel="stylesheet" href="style.css">
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="theme-color" content="#e8f1e7" />
+	<title>Mes révisions — Mon jardin de révisions</title>
+	<link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="wash wash-one"></div><div class="wash wash-two"></div>
-  <header class="site-header">
-    <div class="brand">
-      <div class="brand-mark" aria-hidden="true">❧</div>
-      <div><p class="eyebrow">MON CARNET D’APPRENTISSAGE</p><h1>Mes révisions</h1></div>
-    </div>
-    <nav class="main-nav" aria-label="Navigation principale">
-      <button class="nav-link active" data-page="chapters">Mes chapitres</button>
-      <button class="nav-link" data-page="planning">Mon planning</button>
-    </nav>
-  </header>
+	<div class="wash wash-one"></div>
+	<div class="wash wash-two"></div>
+	<header class="site-header">
+	<div class="brand">
+		<div class="brand-mark" aria-hidden="true">❧</div>
+		<div>
+		<p class="eyebrow">MON CARNET D’APPRENTISSAGE</p>
+		<h1>Mes révisions</h1>
+		</div>
+	</div>
+	<nav class="main-nav" aria-label="Navigation principale">
+		<button class="nav-link active" data-page="chapters">
+		Mes chapitres
+		</button>
+		<button class="nav-link" data-page="planning">Mon planning</button>
+	</nav>
+	</header>
 
-  <main>
-    <section id="page-chapters" class="page active">
-      <div class="intro-row">
-        <div><p class="eyebrow">AVANCER À MON RYTHME</p><h2>Un exercice après l’autre<span class="period">.</span></h2>
-          <p class="intro-copy">Coche tes réussites, reporte ce qui mérite un peu plus de temps. Chaque petit pas compte.</p></div>
-        <div class="progress-card"><span class="progress-leaf">✿</span><div><strong id="progress-count">0 / 63</strong><small>exercices terminés</small></div><div class="progress-track"><span id="progress-bar"></span></div></div>
-      </div>
-      <div class="week-heading"><div><p class="eyebrow">MON CALENDRIER</p><h3>Mes semaines</h3></div><button id="add-week" class="quiet-button">＋ Ajouter une semaine</button></div>
-      <div id="week-tabs" class="week-tabs" role="tablist" aria-label="Semaines"></div>
-      <div id="week-summary" class="week-summary"></div>
-      <div id="chapters-list" class="chapters-list"></div>
-      <p class="legend"><span class="legend-item"><i class="legend-box done"></i> Terminé</span><span class="legend-item"><i class="legend-box postponed"></i> Reporté à une autre semaine</span><span class="legend-item"><i class="legend-box today"></i> À faire cette semaine</span></p>
-    </section>
+	<main>
+	<section id="page-chapters" class="page active">
+		<div class="intro-row">
+		<div>
+			<p class="eyebrow">AVANCER À MON RYTHME</p>
+			<h2>Un exercice après l’autre<span class="period">.</span></h2>
+			<p class="intro-copy">
+			Coche tes réussites, reporte ce qui mérite un peu plus de temps.
+			Chaque petit pas compte.
+			</p>
+		</div>
+		<div class="progress-card">
+			<span class="progress-leaf">✿</span>
+			<div>
+			<strong id="progress-count">0 / 63</strong
+			><small>exercices terminés</small>
+			</div>
+			<div class="progress-track"><span id="progress-bar"></span></div>
+		</div>
+		</div>
+		<div class="week-heading">
+		<div>
+			<p class="eyebrow">MON CALENDRIER</p>
+			<h3>Mes semaines</h3>
+		</div>
+		<button id="add-week" class="quiet-button">
+			＋ Ajouter une semaine
+		</button>
+		</div>
+		<div
+		id="week-tabs"
+		class="week-tabs"
+		role="tablist"
+		aria-label="Semaines"
+		></div>
+		<div id="week-summary" class="week-summary"></div>
+		<div id="chapters-list" class="chapters-list">
+			<article class="chapter-card">
+				<div class="chapter-head">
+				<div>
+					<h3>Le second degré</h3>
+					<p>35 exercices pour progresser</p>
+				</div>
+				<span class="chapter-count">27 / 35 validés</span>
+				</div>
+				<div class="exercise-grid">
+				<button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">1</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">2</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">3</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">4</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">5</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">6</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">7</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">8</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">9</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">10</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">11</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">12</span></button
+				><button
+					class="exercise-cell postponed postponed-diagonal"
+					type="button"
+					title="Reporté au 9 novembre 2026"
+				>
+					<span class="cell-number">13</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">14</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">15</span></button
+				><button
+					class="exercise-cell postponed same-week"
+					type="button"
+					title="Reporté au 5 novembre 2026"
+				>
+					<span class="cell-number">16</span><small>jeudi</small></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">17</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">18</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">19</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">20</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">21</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">22</span></button
+				><button
+					class="exercise-cell postponed same-week"
+					type="button"
+					title="Reporté au 5 novembre 2026"
+				>
+					<span class="cell-number">23</span><small>jeudi</small></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">24</span></button
+				><button
+					class="exercise-cell postponed postponed-diagonal"
+					type="button"
+					title="Reporté au 9 novembre 2026"
+				>
+					<span class="cell-number">25</span></button
+				><button
+					class="exercise-cell postponed postponed-diagonal"
+					type="button"
+					title="Reporté au 16 novembre 2026"
+				>
+					<span class="cell-number">26</span></button
+				><button
+					class="exercise-cell postponed postponed-diagonal"
+					type="button"
+					title="Reporté au 9 novembre 2026"
+				>
+					<span class="cell-number">27</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">28</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">29</span></button
+				><button
+					class="exercise-cell postponed postponed-diagonal"
+					type="button"
+					title="Reporté au 9 novembre 2026"
+				>
+					<span class="cell-number">30</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">31</span></button
+				><button
+					class="exercise-cell postponed same-week"
+					type="button"
+					title="Reporté au 5 novembre 2026"
+				>
+					<span class="cell-number">32</span><small>jeudi</small></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">33</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">34</span></button
+				><button
+					class="exercise-cell done"
+					type="button"
+					title="Exercice validé"
+				>
+					<span class="cell-number">35</span>
+				</button>
+				</div>
+			</article>
+		</div>
+		<p class="legend">
+			<span class="legend-item"
+				><i class="legend-box done"></i> Terminé</span
+			><span class="legend-item"
+				><i class="legend-box postponed"></i> Reporté à une autre
+				semaine</span
+			><span class="legend-item"
+				><i class="legend-box today"></i> À faire cette semaine</span
+			>
+		</p>
+	</section>
 
-    <section id="page-planning" class="page">
-      <div class="intro-row planning-intro"><div><p class="eyebrow">MES RENDEZ-VOUS AVEC LES MATHS</p><h2>Le fil de mes journées<span class="period">.</span></h2><p class="intro-copy">Retrouve ici les exercices prévus, jour après jour.</p></div>
-        <div class="planning-note"><span>❧</span> Les exercices reportés apparaissent automatiquement à leur nouvelle date.</div>
-      </div>
-      <div class="planning-toolbar"><h3>Mon programme</h3><button id="back-to-week" class="quiet-button">Voir les chapitres ↗</button></div>
-      <div id="daily-planning" class="daily-planning"></div>
-    </section>
-  </main>
+	<section id="page-planning" class="page">
+		<div class="intro-row planning-intro">
+		<div>
+			<p class="eyebrow">MES RENDEZ-VOUS AVEC LES MATHS</p>
+			<h2>Le fil de mes journées<span class="period">.</span></h2>
+			<p class="intro-copy">
+			Retrouve ici les exercices prévus, jour après jour.
+			</p>
+		</div>
+		<div class="planning-note">
+			<span>❧</span> Les exercices reportés apparaissent automatiquement à
+			leur nouvelle date.
+		</div>
+		</div>
+		<div class="planning-toolbar">
+		<h3>Mon programme</h3>
+		<button id="back-to-week" class="quiet-button">
+			Voir les chapitres ↗
+		</button>
+		</div>
+		<div id="daily-planning" class="daily-planning"></div>
+	</section>
+	</main>
 
-  <footer><span>❧</span> Un peu chaque jour, et les progrès prennent racine. <span>❧</span></footer>
+	<footer>
+	<span>❧</span> Un peu chaque jour, et les progrès prennent racine.
+	<span>❧</span>
+	</footer>
 
-  <dialog id="exercise-dialog" class="exercise-dialog">
-    <form method="dialog" class="dialog-close"><button aria-label="Fermer">×</button></form>
-    <p class="eyebrow">MON EXERCICE</p><h3 id="dialog-title">Exercice</h3>
-    <p id="dialog-date" class="dialog-date"></p>
-    <div class="dialog-actions">
-      <button id="mark-done" class="action-button success">✓ Valider l’exercice</button>
-      <div class="postpone-area">
-        <label for="postpone-choice">Ou le reporter à…</label>
-        <select id="postpone-choice">
-          <option value="">Choisir une échéance</option>
-          <option value="business">Dans 2 jours ouvrés</option>
-          <option value="week">Dans 1 semaine</option>
-          <option value="two-weeks">Dans 2 semaines</option>
-        </select>
-        <button id="confirm-postpone" class="action-button secondary">Confirmer le report</button>
-      </div>
-      <button id="reset-exercise" class="text-button">Remettre à faire</button>
-    </div>
-  </dialog>
+	<dialog id="exercise-dialog" class="exercise-dialog">
+	<form method="dialog" class="dialog-close">
+		<button aria-label="Fermer">×</button>
+	</form>
+	<p class="eyebrow">MON EXERCICE</p>
+	<h3 id="dialog-title">Exercice</h3>
+	<p id="dialog-date" class="dialog-date"></p>
+	<div class="dialog-actions">
+		<button id="mark-done" class="action-button success">
+		✓ Valider l’exercice
+		</button>
+		<div class="postpone-area">
+		<label for="postpone-choice">Ou le reporter à…</label>
+		<select id="postpone-choice">
+			<option value="">Choisir une échéance</option>
+			<option value="business">Dans 2 jours ouvrés</option>
+			<option value="week">Dans 1 semaine</option>
+			<option value="two-weeks">Dans 2 semaines</option>
+		</select>
+		<label for="postpone-comment">
+			Pourquoi reporter cet exercice ? (facultatif)
+		</label>
 
-  <div class="data-tools">
-    <span>Vos données sont enregistrées sur cet appareil.</span>
-    <button id="export-data">Sauvegarder mes données</button>
-    <label class="import-label">Restaurer une sauvegarde<input id="import-data" type="file" accept="application/json,.json"></label>
-  </div>
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
-  <script src="script.js"></script>
+		<textarea
+			id="postpone-comment"
+			placeholder="Ex. : Revoir la formule de la dérivée..."
+			rows="3"
+		></textarea>
+		<button id="confirm-postpone" class="action-button secondary">
+			Confirmer le report
+		</button>
+		</div>
+		<button id="reset-exercise" class="text-button">
+		Remettre à faire
+		</button>
+	</div>
+	</dialog>
+
+	<div class="data-tools">
+	<span>Vos données sont enregistrées sur cet appareil.</span>
+	<button id="export-data">Sauvegarder mes données</button>
+	<label class="import-label"
+		>Restaurer une sauvegarde<input
+		id="import-data"
+		type="file"
+		accept="application/json,.json"
+	/></label>
+	</div>
+	<div id="toast" class="toast" role="status" aria-live="polite"></div>
+	<script src="script.js"></script>
 </body>
 </html>

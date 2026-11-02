@@ -1146,3 +1146,31 @@ footer span {
   border-top: none;
   border-radius: 0 0 14px 14px;
 }
+
+#postpone-comment {
+  width: 100%;
+  margin: 8px 0 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: white;
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  resize: vertical;
+}
+
+#postpone-comment:focus {
+  outline: 2px solid var(--green-light);
+  border-color: var(--green);
+}
+
+.exercise-comment {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  text-align: center;
+  font-size: 9px !important;
+  line-height: 1.2;
+  color: var(--green-dark) !important;
+}

@@ -233,9 +233,11 @@
             cell.classList.add("same-week");
         }
         const number = document.createElement("span");
-        number.className = "cell-number";
+        number.className = 'cell-number';
         number.textContent = i;
+
         cell.append(number);
+
         if (ex.status === "postponed") {
           const due = fromISO(ex.date);
 
@@ -245,6 +247,14 @@
           } else {
             const dueWeek = iso(mondayOf(due));
             const selected = state.selectedWeek;
+
+            // Afficher le commentaire à partir de la semaine prévue
+            if (selected >= dueWeek && ex.comment) {
+              const comment = document.createElement("small");
+              comment.className = "exercise-comment";
+              comment.textContent = ex.comment;
+              cell.append(comment);
+            }
 
             if (selected === dueWeek) {
               // Semaine prévue : case normale avec le jour
@@ -414,6 +424,7 @@ function renderPlanning() {
           ? "Cet exercice est validé."
           : "À toi de jouer !";
     $("#postpone-choice").value = "";
+    $('#postpone-comment').value = ex.comment || '';
     $("#exercise-dialog").showModal();
   }
   function closeDialog() {
@@ -447,7 +458,7 @@ function renderPlanning() {
     else due = addDays(base, 14);
     const dueISO = iso(due);
     ensureWeek(due);
-    setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO });
+    setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: $('#postpone-comment').value.trim() });
     closeDialog();
     render();
     toast(`Exercice reporté au ${dateLabel(due)}.`);
