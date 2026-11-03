@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "weeks": [
+    "2026-10-26",
+    "2026-11-02",
+    "2026-11-09",
+    "2026-11-16"
+  ],
+  "selectedWeek": "2026-11-02",
+  "exercises": {
+    "second-degre:16": {
+      "status": "postponed",
+      "date": "2026-11-05"
+    },
+    "second-degre:1": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:2": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:3": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:4": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:5": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:6": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:7": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:8": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:9": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:10": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:11": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:12": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:13": {
+      "status": "postponed",
+      "date": "2026-11-09"
+    },
+    "second-degre:14": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:15": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:17": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:18": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:19": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:20": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:21": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:22": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:23": {
+      "status": "postponed",
+      "date": "2026-11-05"
+    },
+    "second-degre:24": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:25": {
+      "status": "postponed",
+      "date": "2026-11-09"
+    },
+    "second-degre:26": {
+      "status": "postponed",
+      "date": "2026-11-16"
+    },
+    "second-degre:27": {
+      "status": "postponed",
+      "date": "2026-11-09"
+    },
+    "second-degre:28": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:29": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:30": {
+      "status": "postponed",
+      "date": "2026-11-9"
+    },
+    "second-degre:31": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:32": {
+      "status": "postponed",
+      "date": "2026-11-05"
+    },
+    "second-degre:33": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:34": {
+      "status": "done",
+      "date": null
+    },
+    "second-degre:35": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:1": {
+      "status": "postponed",
+      "date": "2026-11-05",
+      "comment": "qu 1 & 2"
+    },
+    "derivation:2": {
+      "status": "done",
+      "date": null,
+      "comment": "qu 1"
+    },
+    "derivation:7": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:13": {
+      "status": "done",
+      "date": null,
+      "comment": "qu 2"
+    },
+    "derivation:3": {
+      "status": "postponed",
+      "date": "2026-11-03",
+      "comment": "qu 1"
+    },
+    "derivation:4": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:5": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:6": {
+      "status": "postponed",
+      "date": "2026-11-04",
+      "comment": "qu 1"
+    },
+    "derivation:8": {
+      "status": "postponed",
+      "date": "2026-11-04",
+      "comment": ""
+    },
+    "derivation:9": {
+      "status": "postponed",
+      "date": "2026-11-05"
+    },
+    "derivation:10": {
+      "status": "postponed",
+      "date": "2026-11-09"
+    },
+    "derivation:11": {
+      "status": "postponed",
+      "date": "2026-11-02"
+    },
+    "derivation:12": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:14": {
+      "status": "postponed",
+      "date": "2026-11-02",
+      "comment": "qu 1 & 3"
+    },
+    "derivation:15": {
+      "status": "postponed",
+      "date": "2026-11-02"
+    },
+    "derivation:21": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:18": {
+      "status": "done",
+      "date": null
+    },
+    "derivation:22": {
+      "status": "postponed",
+      "date": "2026-11-02"
+    },
+    "derivation:24": {
+      "status": "postponed",
+      "date": "2026-11-02"
+    },
+    "derivation:16": {
+      "status": "postponed",
+      "date": "2026-11-09"
+    },
+    "derivation:17": {
+      "status": "postponed",
+      "date": "2026-11-9",
+      "comment": "qu 3"
+    },
+    "derivation:19": {
+      "status": "postponed",
+      "date": "2026-11-02"
+    },
+    "derivation:20": {
+      "status": "todo",
+      "date": null
+    }
+  }
+}
