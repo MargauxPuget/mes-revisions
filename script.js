@@ -121,13 +121,43 @@
   function key(ch, id) {
     return `${ch}:${id}`;
   }
+
   function getExercise(ch, id) {
-    return state.exercises[key(ch, id)] || { status: "todo", date: null };
+    const ex = state.exercises[key(ch, id)] || {
+      status: "todo",
+      date: null
+    };
+
+    // Garantir la présence d'un historique
+    if (!Array.isArray(ex.history)) {
+      ex.history = [];
+    }
+
+    return ex;
   }
+
   function setExercise(ch, id, value) {
-    state.exercises[key(ch, id)] = value;
+    const exerciseKey = key(ch, id);
+    const previous = getExercise(ch, id);
+
+    // Créer une nouvelle entrée dans l'historique
+    const event = {
+      type: value.status,
+      date: iso(today()),
+      dueDate: value.status === "postponed" ? value.date : null,
+      comment: value.status === "postponed" ? (value.comment || "") : ""
+    };
+
+    // Mettre à jour l'exercice sans perdre son historique
+    state.exercises[exerciseKey] = {
+      ...previous,
+      ...value,
+      history: [...previous.history, event]
+    };
+
     save();
   }
+
   function ensureWeek(date) {
     const monday = iso(mondayOf(date));
     if (!state.weeks.includes(monday)) {
@@ -292,6 +322,100 @@
     $("#progress-count").textContent = `${done} / ${total}`;
     $("#progress-bar").style.width = `${(done / total) * 100}%`;
   }
+
+
+function renderTracking() {
+  const host = $("#tracking-content");
+  host.innerHTML = "";
+
+  chapters.forEach((ch) => {
+    const exercises = [];
+
+    for (let i = 1; i <= ch.count; i++) {
+      const ex = getExercise(ch.id, i);
+
+      if (ex.history && ex.history.length > 0) {
+        exercises.push({
+          number: i,
+          history: ex.history
+        });
+      }
+    }
+
+    if (exercises.length === 0) return;
+
+    const chapter = document.createElement("section");
+    chapter.className = "tracking-chapter";
+
+    const title = document.createElement("h3");
+    title.textContent = ch.title;
+    chapter.append(title);
+
+    exercises.forEach((exercise) => {
+      const card = document.createElement("details");
+      card.className = "tracking-exercise";
+
+      // Tous les exercices sont fermés par défaut
+      card.open = false;
+
+      const heading = document.createElement("summary");
+      heading.className = "tracking-exercise-title";
+      heading.textContent = `Exercice ${exercise.number}`;
+
+      card.append(heading);
+
+      const history = document.createElement("div");
+      history.className = "tracking-history";
+
+      const events = [...exercise.history].reverse();
+
+      events.forEach((event) => {
+        const item = document.createElement("div");
+        item.className = `tracking-event ${event.type}`;
+
+        const date = document.createElement("p");
+        date.textContent = event.date
+          ? dateLabel(fromISO(event.date))
+          : "Date inconnue";
+
+        const description = document.createElement("p");
+
+        if (event.type === "postponed") {
+          description.textContent = event.dueDate
+            ? `Exercice reporté au ${dateLabel(fromISO(event.dueDate))}`
+            : "Exercice reporté";
+        } else if (event.type === "done") {
+          description.textContent = "Exercice validé ✓";
+        } else {
+          description.textContent = "Exercice remis à faire";
+        }
+
+        item.append(date, description);
+
+        if (event.comment) {
+          const comment = document.createElement("p");
+          comment.className = "tracking-comment";
+          comment.textContent = event.comment;
+          item.append(comment);
+        }
+
+        history.append(item);
+      });
+
+      card.append(history);
+      chapter.append(card);
+    });
+
+    host.append(chapter);
+  });
+
+  if (host.children.length === 0) {
+    host.textContent =
+      "Aucun historique pour le moment. Tes prochains reports et validations apparaîtront ici.";
+  }
+}
+
+
 
 
 function renderPlanning() {
@@ -469,6 +593,7 @@ function renderPlanning() {
     renderChapters();
     renderProgress();
     renderPlanning();
+    renderTracking();
     save();
   }
   document
