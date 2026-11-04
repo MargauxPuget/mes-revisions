@@ -1,8 +1,14 @@
 	const STORAGE_KEY = "mes-revisions-v1";
 	const chapters = [
-	{ id: "second-degre", title: "Le second degré", count: 35 },
-	{ id: "derivation", title: "La dérivation", count: 28 },
+		{ id: "second-degre", title: "Le second degré", count: 35 },
+		{ id: "derivation", title: "La dérivation", count: 28 },
 	];
+
+	// Variables globales
+	let state;
+	let active = null;
+
+
 	const $ = (s) => document.querySelector(s);
 	const today = () => {
 	const d = new Date();
@@ -94,7 +100,7 @@
 		exercises: {},
 	};
 	};
-	let state;
+
 	try {
 	state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || makeInitial();
 	} catch {
@@ -128,10 +134,6 @@
 
 	function key(ch, id) {
 	return `${ch}:${id}`;
-	}
-
-	function getExercise(ch, id) {
-		return state.exercises[key(ch, id)] || { status: "todo", date: null };
 	}
 
 	// Récupérer les données d'un exercice
@@ -452,22 +454,46 @@
 	}
 	}
 
+	
+	// Ouvrir la fenêtre permettant de gérer un exercice
+	function openExercise(chapter, exerciseNumber) {
+		// Mémoriser l'exercice actuellement sélectionné
+		active = {
+			ch: chapter,
+			n: exerciseNumber
+		};
 
-	let active = null;
-	function openExercise(ch, n) {
-	active = { ch, n };
-	const ex = getExercise(ch.id, n);
-	$("#dialog-title").textContent = `${ch.title} · Exercice ${n}`;
-	$("#dialog-date").textContent =
-		ex.status === "postponed"
-		? `Prévu le ${dateLabel(fromISO(ex.date))}`
-		: ex.status === "done"
-			? "Cet exercice est validé."
-			: "À toi de jouer !";
-	$("#postpone-choice").value = "";
-	$('#postpone-comment').value = ex.comment || '';
-	$("#exercise-dialog").showModal();
+		// Récupérer les données de l'exercice
+		const exerciseData = getExercise(chapter.id, exerciseNumber);
+
+		// Afficher le titre de la fenêtre
+		$("#dialog-title").textContent =
+			`${chapter.title} · Exercice ${exerciseNumber}`;
+
+		// Préparer le message correspondant à l'état de l'exercice
+		let dialogMessage;
+
+		if (exerciseData.status === "postponed") {
+			dialogMessage = `Prévu le ${dateLabel(fromISO(exerciseData.date))}`;
+		} else if (exerciseData.status === "done") {
+			dialogMessage = "Cet exercice est validé.";
+		} else {
+			dialogMessage = "À toi de jouer !";
+		}
+
+		// Afficher le message dans la fenêtre
+		$("#dialog-date").textContent = dialogMessage;
+
+		// Réinitialiser le choix de report
+		$("#postpone-choice").value = "";
+
+		// Afficher le commentaire déjà enregistré
+		$("#postpone-comment").value = exerciseData.comment || "";
+
+		// Ouvrir la fenêtre
+		$("#exercise-dialog").showModal();
 	}
+
 	function closeDialog() {
 	$("#exercise-dialog").close();
 	}
