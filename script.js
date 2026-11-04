@@ -74,16 +74,8 @@
 
 	return 1 + Math.round((d - firstThursday) / 604800000);
 	};
-	const weekLabel = (d) => {
-	if (!(d instanceof Date) || isNaN(d.getTime())) {
-		return "Semaine à définir";
-	}
 
-	return `Semaine du ${d.toLocaleDateString("fr-FR", {
-		day: "numeric",
-		month: "short",
-	})}`;
-	};
+
 	const dayLabel = (d) => d.toLocaleDateString("fr-FR", { weekday: "long" });
 	const dateLabel = (d) =>
 	d.toLocaleDateString("fr-FR", {
@@ -185,9 +177,6 @@
 	el.classList.add("show");
 	clearTimeout(toast.timer);
 	toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
-	}
-	function weekEnd(w) {
-	return addDays(fromISO(w), 6);
 	}
 
 	function renderTabs() {
