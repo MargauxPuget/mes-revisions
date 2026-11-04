@@ -135,7 +135,7 @@
 		// Sauvegarder les modifications
 		save();
 	}
-	
+
 	function ensureWeek(date) {
 	const monday = iso(mondayOf(date));
 	if (!state.weeks.includes(monday)) {
@@ -471,14 +471,28 @@
 	render();
 	toast(`Exercice reporté au ${dateLabel(due)}.`);
 	});
+	
+	// Actualiser l'affichage du site et sauvegarder les données
 	function render() {
-	ensureFutureWeeks();
-	renderTabs();
-	renderChapters();
-	renderProgress();
-	renderPlanning();
-	save();
+		// Vérifier que les semaines nécessaires sont disponibles
+		ensureFutureWeeks();
+
+		// Afficher les onglets des semaines
+		renderTabs();
+
+		// Afficher les chapitres et leurs exercices
+		renderChapters();
+
+		// Actualiser la progression des exercices
+		renderProgress();
+
+		// Actualiser le planning
+		renderPlanning();
+
+		// Sauvegarder les données
+		save();
 	}
+
 	document
 	.querySelectorAll(".nav-link")
 	.forEach((b) =>
