@@ -113,10 +113,19 @@
 	if (!state.weeks.includes(state.selectedWeek))
 		state.selectedWeek = iso(base);
 	}
+
+	// Sauvegarder les données du projet dans le navigateur
 	function save() {
-	ensureFutureWeeks();
-	localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+		// Vérifier que les semaines nécessaires sont disponibles
+		ensureFutureWeeks();
+
+		// Convertir les données en texte JSON
+		const savedData = JSON.stringify(state);
+
+		// Enregistrer les données dans le stockage local
+		localStorage.setItem(STORAGE_KEY, savedData);
 	}
+
 	function key(ch, id) {
 	return `${ch}:${id}`;
 	}
