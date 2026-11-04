@@ -1,4 +1,3 @@
-(() => {
   const STORAGE_KEY = "mes-revisions-v1";
   const chapters = [
     { id: "second-degre", title: "Le second degré", count: 35 },
@@ -535,4 +534,3 @@ function renderPlanning() {
   });
   ensureFutureWeeks();
   render();
-})();
