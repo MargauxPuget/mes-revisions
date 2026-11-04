@@ -179,12 +179,24 @@
 		return weekStart;
 	}
 
-	function toast(msg) {
-	const el = $("#toast");
-	el.textContent = msg;
-	el.classList.add("show");
-	clearTimeout(toast.timer);
-	toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
+	// Afficher un message temporaire à l'écran
+	function toast(message) {
+		// Récupérer l'élément qui affiche le message
+		const toastElement = $("#toast");
+
+		// Afficher le texte du message
+		toastElement.textContent = message;
+
+		// Rendre le message visible
+		toastElement.classList.add("show");
+
+		// Annuler le précédent minuteur
+		clearTimeout(toast.timer);
+
+		// Masquer le message après 2,6 secondes
+		toast.timer = setTimeout(() => {
+			toastElement.classList.remove("show");
+		}, 2600);
 	}
 
 	function renderTabs() {
