@@ -503,9 +503,15 @@
 		$("#exercise-dialog").showModal();
 	}
 
+	// Fermer la fenêtre de gestion d'un exercice
 	function closeDialog() {
-	$("#exercise-dialog").close();
+		// Récupérer la fenêtre
+		const exerciseDialog = $("#exercise-dialog");
+
+		// Fermer la fenêtre
+		exerciseDialog.close();
 	}
+
 	$("#mark-done").addEventListener("click", () => {
 	if (!active) return;
 	setExercise(active.ch.id, active.n, { status: "done", date: null });
@@ -566,14 +572,26 @@
 	.forEach((b) =>
 		b.addEventListener("click", () => switchPage(b.dataset.page)),
 	);
+	
+	// Afficher la page sélectionnée dans le menu
 	function switchPage(page) {
-	document
-		.querySelectorAll(".nav-link")
-		.forEach((b) => b.classList.toggle("active", b.dataset.page === page));
-	document
-		.querySelectorAll(".page")
-		.forEach((p) => p.classList.toggle("active", p.id === `page-${page}`));
+		// Récupérer tous les liens de navigation
+		const navigationLinks = document.querySelectorAll(".nav-link");
+
+		// Récupérer toutes les pages du site
+		const pages = document.querySelectorAll(".page");
+
+		// Mettre à jour le lien actif dans le menu
+		navigationLinks.forEach((link) => {
+			link.classList.toggle("active", link.dataset.page === page);
+		});
+
+		// Afficher uniquement la page sélectionnée
+		pages.forEach((pageElement) => {
+			pageElement.classList.toggle("active", pageElement.id === `page-${page}`);
+		});
 	}
+
 	$("#back-to-week").addEventListener("click", () => switchPage("chapters"));
 	$("#add-week").addEventListener("click", () => {
 	const latest = fromISO(state.weeks[state.weeks.length - 1]);
