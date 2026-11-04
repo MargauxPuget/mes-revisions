@@ -120,8 +120,32 @@
 	function key(ch, id) {
 	return `${ch}:${id}`;
 	}
+
 	function getExercise(ch, id) {
-	return state.exercises[key(ch, id)] || { status: "todo", date: null };
+		return state.exercises[key(ch, id)] || { status: "todo", date: null };
+	}
+
+	// Récupérer les données d'un exercice
+	function getExercise(chapterId, exerciseNumber) {
+		// Identifier l'exercice
+		const exerciseKey = key(chapterId, exerciseNumber);
+
+		// Récupérer les données de l'exercice
+		const exerciseData = state.exercises[exerciseKey];
+
+		// Définir les données à retourner
+		let result;
+
+		if (exerciseData) {
+			result = exerciseData;
+		} else {
+			result = {
+			status: "todo",
+			date: null
+			};
+		}
+
+		return result;
 	}
 
 	// Mettre à jour les données d'un exercice et sauvegarder les modifications
