@@ -164,14 +164,21 @@
 		save();
 	}
 
+	// Ajouter une semaine au calendrier si elle n'existe pas encore
 	function ensureWeek(date) {
-	const monday = iso(mondayOf(date));
-	if (!state.weeks.includes(monday)) {
-		state.weeks.push(monday);
-		state.weeks.sort();
+		// Récupérer le lundi de la semaine
+		const weekStart = iso(mondayOf(date));
+
+		// Vérifier si la semaine existe déjà
+		if (!state.weeks.includes(weekStart)) {
+			state.weeks.push(weekStart);
+			state.weeks.sort();
+		}
+
+		// Retourner la date du lundi
+		return weekStart;
 	}
-	return monday;
-	}
+
 	function toast(msg) {
 	const el = $("#toast");
 	el.textContent = msg;
