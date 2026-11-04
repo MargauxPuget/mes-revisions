@@ -124,14 +124,15 @@
 		localStorage.setItem(STORAGE_KEY, savedData);
 	}
 
-	function key(ch, id) {
-	return `${ch}:${id}`;
+	// Créer l'identifiant unique d'un exercice
+	function getExerciseKey(chapterId, exerciseNumber) {
+		return `${chapterId}:${exerciseNumber}`;
 	}
 
 	// Récupérer les données d'un exercice
 	function getExercise(chapterId, exerciseNumber) {
 		// Identifier l'exercice
-		const exerciseKey = key(chapterId, exerciseNumber);
+		const exerciseKey = getExerciseKey(chapterId, exerciseNumber);
 
 		// Récupérer les données de l'exercice
 		const exerciseData = state.exercises[exerciseKey];
@@ -154,7 +155,7 @@
 	// Mettre à jour les données d'un exercice et sauvegarder les modifications
 	function setExercise(chapterId, exerciseNumber, exerciseData) {
 		// Identifier l'exercice à modifier
-		const exerciseKey = key(chapterId, exerciseNumber);
+		const exerciseKey = getExerciseKey(chapterId, exerciseNumber);
 
 		// Mettre à jour les informations de l'exercice
 		state.exercises[exerciseKey] = exerciseData;
