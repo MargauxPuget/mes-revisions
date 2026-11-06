@@ -1056,8 +1056,13 @@ footer span {
     gap: 12px;
   }
 
-  .tracking-chapter {
-    padding: 18px 15px;
+  .tracking-chapter-title {
+    padding: 17px 15px;
+    font-size: 19px;
+  }
+
+  .tracking-chapter-content {
+    padding: 8px 10px 12px;
   }
 
   .tracking-event {
@@ -1193,20 +1198,60 @@ footer span {
   gap: 28px;
 }
 
+/* Accordéon du chapitre : niveau 1 */
 .tracking-chapter {
-  padding: 23px;
+  overflow: hidden;
   border: 1px solid #e1e9de;
   border-radius: var(--radius-card);
   background: #ffffffd9;
   box-shadow: var(--shadow);
 }
 
-.tracking-chapter h3 {
-  margin: 0 0 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--line);
+/* Titre du chapitre */
+.tracking-chapter-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 20px 23px;
+
+  color: var(--deep);
   font: 600 22px var(--font-heading);
+
+  cursor: pointer;
+  list-style: none;
 }
+
+/* Masquer le marqueur natif */
+.tracking-chapter-title::-webkit-details-marker {
+  display: none;
+}
+
+/* Flèche du chapitre */
+.tracking-chapter-title::after {
+  content: "⌄";
+  color: #83a88a;
+  font-size: 23px;
+  transition: transform 0.2s ease;
+}
+
+/* Chapitre ouvert */
+.tracking-chapter[open] .tracking-chapter-title {
+  border-bottom: 1px solid #c5d8c2;
+  background: #dcebd8;
+  color: #355e43;
+}
+
+.tracking-chapter[open] .tracking-chapter-title::after {
+  transform: rotate(180deg);
+}
+
+/* Contenu intérieur du chapitre */
+.tracking-chapter-content {
+  padding: 10px 18px 18px;
+}
+
 
 .tracking-exercise {
   margin: 9px 0;

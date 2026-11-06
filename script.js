@@ -324,6 +324,7 @@
   }
 
 
+
 function renderTracking() {
   const host = $("#tracking-content");
   host.innerHTML = "";
@@ -344,18 +345,24 @@ function renderTracking() {
 
     if (exercises.length === 0) return;
 
-    const chapter = document.createElement("section");
+    // Accordéon du chapitre (niveau 1)
+    const chapter = document.createElement("details");
     chapter.className = "tracking-chapter";
+    chapter.open = false;
 
-    const title = document.createElement("h3");
+    const title = document.createElement("summary");
+    title.className = "tracking-chapter-title";
     title.textContent = ch.title;
+
     chapter.append(title);
+
+    // Contenu du chapitre : accordéons des exercices
+    const chapterContent = document.createElement("div");
+    chapterContent.className = "tracking-chapter-content";
 
     exercises.forEach((exercise) => {
       const card = document.createElement("details");
       card.className = "tracking-exercise";
-
-      // Tous les exercices sont fermés par défaut
       card.open = false;
 
       const heading = document.createElement("summary");
@@ -403,9 +410,10 @@ function renderTracking() {
       });
 
       card.append(history);
-      chapter.append(card);
+      chapterContent.append(card);
     });
 
+    chapter.append(chapterContent);
     host.append(chapter);
   });
 
@@ -414,6 +422,7 @@ function renderTracking() {
       "Aucun historique pour le moment. Tes prochains reports et validations apparaîtront ici.";
   }
 }
+
 
 
 
