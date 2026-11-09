@@ -3,6 +3,7 @@
   const chapters = [
     { id: "second-degre", title: "Le second degré", count: 35 },
     { id: "derivation", title: "La dérivation", count: 28 },
+    { id: "suite_numerique", title: "Les suites numériques", count: 28 },
   ];
   const $ = (s) => document.querySelector(s);
   const today = () => {
