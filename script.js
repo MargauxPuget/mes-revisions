@@ -1,75 +1,171 @@
-(() => {
-  const STORAGE_KEY = "mes-revisions-v1";
-  const chapters = [
-    { id: "second-degre", title: "Le second degré", count: 35 },
-    { id: "derivation", title: "La dérivation", count: 28 },
-    { id: "suite_numerique", title: "Les suites numériques", count: 28 },
-  ];
-  const $ = (s) => document.querySelector(s);
-  const today = () => {
-    const d = new Date();
-    d.setHours(0, 0, 0, 0);
-    return d;
-  };
-  const iso = (d) => {
-    const x = new Date(d);
-    x.setHours(12, 0, 0, 0);
-    return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, "0")}-${String(x.getDate()).padStart(2, "0")}`;
-  };
-  const fromISO = (s) => {
-    if (!s || typeof s !== "string") return new Date(NaN);
+ 
+/* =========================================================
+   1. CONFIGURATION
+   ========================================================= */
 
-    const [y, m, d] = s.split("-").map(Number);
+// Stockage
+const STORAGE_KEY = "mes-revisions-v1";
 
-    if (!y || !m || !d) return new Date(NaN);
+// Chapitres et nombre d'exercices
+const CHAPTERS = [
+  { id: "second-degre", title: "Le second degré", count: 35 },
+  { id: "derivation", title: "La dérivation", count: 28 },
+  { id: "suite_numerique", title: "Les suites numériques", count: 28 }
+];
 
-    const date = new Date(y, m - 1, d, 12);
+// Paramètres du planning
+const PLANNING_WEEKS = 3;
 
-    if (
-      date.getFullYear() !== y ||
-      date.getMonth() !== m - 1 ||
-      date.getDate() !== d
-    ) {
-      return new Date(NaN);
-    }
+// Délais de report en jours
+const POSTPONE_DELAYS = {
+  businessDays: 2,
+  oneWeek: 7,
+  twoWeeks: 14
+};
 
-    return date;
-  };
-  const addDays = (d, n) => {
-    const x = new Date(d);
-    x.setDate(x.getDate() + n);
-    return x;
-  };
-  const addBusinessDays = (d, n) => {
-    const x = new Date(d);
-    let added = 0;
-    while (added < n) {
-      x.setDate(x.getDate() + 1);
-      if (x.getDay() !== 0 && x.getDay() !== 6) added++;
-    }
-    return x;
-  };
 
-  const mondayOf = (d) => {
-    const x = new Date(d);
-    const shift = (x.getDay() + 6) % 7;
-    x.setDate(x.getDate() - shift);
-    x.setHours(12, 0, 0, 0);
-    return x;
-  };
+/* =========================================================
+   2. VARIABLES GLOBALES
+   ========================================================= */
 
-  const weekNumber = (date) => {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
+// Données de l'application
+let state = null;
 
-    const firstThursday = new Date(d.getFullYear(), 0, 4);
-    firstThursday.setDate(
-      firstThursday.getDate() + 3 - ((firstThursday.getDay() + 6) % 7),
-    );
+// Exercice actuellement sélectionné
+let active = null;
 
-    return 1 + Math.round((d - firstThursday) / 604800000);
-  };
+
+/* =========================================================
+   3. SÉLECTEURS
+   ========================================================= */
+
+// Sélectionne un élément HTML à partir de son sélecteur CSS (id, classe, etc.).
+const selectElement = (selector) => document.querySelector(selector);
+
+
+/* =========================================================
+   3. FONCTIONS UTILITAIRES
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   3.1 GESTION DES DATES
+   --------------------------------------------------------- */
+
+// Récupère la date du jour en remettant l'heure à zéro.
+const getToday = () => {
+	const currentDate = new Date();
+	currentDate.setHours(0, 0, 0, 0);
+
+	return currentDate;
+};
+
+// Convertit une date JavaScript au format AAAA-MM-JJ.
+// L'heure est fixée à midi pour éviter les problèmes de changement de jour.
+const formatDateToISO = (date) => {
+	const formattedDate = new Date(date);
+	formattedDate.setHours(12, 0, 0, 0);
+
+	const year = formattedDate.getFullYear();
+	const month = String(formattedDate.getMonth() + 1).padStart(2, "0");
+	const day = String(formattedDate.getDate()).padStart(2, "0");
+
+	return `${year}-${month}-${day}`;
+};
+
+// Convertit une date au format AAAA-MM-JJ en objet Date.
+// Vérifie également que la date existe réellement.
+const parseISODate = (dateString) => {
+	let parsedDate = new Date(NaN);
+
+	if (dateString && typeof dateString === "string") {
+		const [year, month, day] = dateString.split("-").map(Number);
+
+		if (year && month && day) {
+			const candidateDate = new Date(year, month - 1, day, 12);
+
+			const isValidDate =
+				candidateDate.getFullYear() === year &&
+				candidateDate.getMonth() === month - 1 &&
+				candidateDate.getDate() === day;
+
+			if (isValidDate) {
+				parsedDate = candidateDate;
+			}
+		}
+  }
+
+  return parsedDate;
+};
+
+// Ajoute un nombre de jours calendaires à une date.
+const addDays = (date, numberOfDays) => {
+	const updatedDate = new Date(date);
+	updatedDate.setDate(updatedDate.getDate() + numberOfDays);
+
+	return updatedDate;
+};
+
+// Ajoute un nombre de jours ouvrés à une date.
+// Les samedis et dimanches ne sont pas comptabilisés.
+const addBusinessDays = (date, numberOfDays) => {
+	const updatedDate = new Date(date);
+	let addedDays = 0;
+
+	while (addedDays < numberOfDays) {
+		updatedDate.setDate(updatedDate.getDate() + 1);
+
+		const dayOfWeek = updatedDate.getDay();
+		const isBusinessDay = dayOfWeek !== 0 && dayOfWeek !== 6;
+
+		if (isBusinessDay) {
+			addedDays++;
+		}
+	}
+
+	return updatedDate;
+};
+
+// Récupère le lundi de la semaine correspondant à une date.
+const getMondayOfWeek = (date) => {
+	const mondayDate = new Date(date);
+	const dayOfWeek = mondayDate.getDay();
+	const daysSinceMonday = (dayOfWeek + 6) % 7;
+
+	mondayDate.setDate(mondayDate.getDate() - daysSinceMonday);
+	mondayDate.setHours(12, 0, 0, 0);
+
+	return mondayDate;
+};
+
+// Calcule le numéro de semaine selon la norme ISO 8601.
+const getWeekNumber = (date) => {
+	const adjustedDate = new Date(date);
+	adjustedDate.setHours(0, 0, 0, 0);
+
+	adjustedDate.setDate(
+		adjustedDate.getDate() + 3 - ((adjustedDate.getDay() + 6) % 7),
+	);
+
+	const firstThursday = new Date(adjustedDate.getFullYear(), 0, 4);
+
+	firstThursday.setDate(
+		firstThursday.getDate() + 3 - ((firstThursday.getDay() + 6) % 7),
+	);
+
+	const millisecondsPerWeek = 604800000;
+	const weekNumber = 1 + Math.round((adjustedDate - firstThursday) / millisecondsPerWeek);
+
+	return weekNumber;
+};
+
+
+
+
+
+
+
+
+
   const weekLabel = (d) => {
     if (!(d instanceof Date) || isNaN(d.getTime())) {
       return "Semaine à définir";
@@ -88,15 +184,15 @@
       year: "numeric",
     });
   const makeInitial = () => {
-    const first = mondayOf(today());
+    const first = getMondayOfWeek(getToday());
     return {
       version: 1,
-      weeks: [0, 1, 2].map((i) => iso(addDays(first, i * 7))),
-      selectedWeek: iso(first),
+      weeks: [0, 1, 2].map((i) => formatDateToISO(addDays(first, i * 7))),
+      selectedWeek: formatDateToISO(first),
       exercises: {},
     };
   };
-  let state;
+
   try {
     state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || makeInitial();
   } catch {
@@ -105,15 +201,15 @@
   if (!Array.isArray(state.weeks) || !state.exercises) state = makeInitial();
   state.weeks = state.weeks.filter((v, i, a) => a.indexOf(v) === i).sort();
   function ensureFutureWeeks() {
-    const base = mondayOf(today());
-    const required = [0, 1, 2].map((i) => iso(addDays(base, i * 7)));
+    const base = getMondayOfWeek(getToday());
+    const required = [0, 1, 2].map((i) => formatDateToISO(addDays(base, i * 7)));
     required.forEach((w) => {
       if (!state.weeks.includes(w)) state.weeks.push(w);
     });
     state.weeks.sort();
     // Keep all historical weeks; never prune stored work.
     if (!state.weeks.includes(state.selectedWeek))
-      state.selectedWeek = iso(base);
+      state.selectedWeek = formatDateToISO(base);
   }
   function save() {
     ensureFutureWeeks();
@@ -144,7 +240,7 @@
     // Créer une nouvelle entrée dans l'historique
     const event = {
       type: value.status,
-      date: iso(today()),
+      date: formatDateToISO(getToday()),
       dueDate: value.status === "postponed" ? value.date : null,
       comment: value.status === "postponed" ? (value.comment || "") : ""
     };
@@ -160,7 +256,7 @@
   }
 
   function ensureWeek(date) {
-    const monday = iso(mondayOf(date));
+    const monday = formatDateToISO(getMondayOfWeek(date));
     if (!state.weeks.includes(monday)) {
       state.weeks.push(monday);
       state.weeks.sort();
@@ -168,23 +264,23 @@
     return monday;
   }
   function toast(msg) {
-    const el = $("#toast");
+    const el = selectElement("#toast");
     el.textContent = msg;
     el.classList.add("show");
     clearTimeout(toast.timer);
     toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
   }
   function weekEnd(w) {
-    return addDays(fromISO(w), 6);
+    return addDays(parseISODate(w), 6);
   }
 
   function renderTabs() {
-    const host = $("#week-tabs");
+    const host = selectElement("#week-tabs");
     host.innerHTML = "";
 
     // Ne conserver que les semaines avec une date valide
     state.weeks = state.weeks.filter(
-      (w) => typeof w === "string" && !isNaN(fromISO(w).getTime()),
+      (w) => typeof w === "string" && !isNaN(parseISODate(w).getTime()),
     );
 
     // Éliminer les doublons
@@ -192,23 +288,23 @@
 
     // Garantir qu'il existe au moins une semaine
     if (state.weeks.length === 0) {
-      const first = iso(mondayOf(today()));
+      const first = formatDateToISO(getMondayOfWeek(getToday()));
       state.weeks = [first];
       state.selectedWeek = first;
     }
 
     // Corriger la semaine sélectionnée si elle est invalide
     if (!state.weeks.includes(state.selectedWeek)) {
-      state.selectedWeek = iso(mondayOf(today()));
+      state.selectedWeek = formatDateToISO(getMondayOfWeek(getToday()));
     }
 
     state.weeks.forEach((w) => {
       const b = document.createElement("button");
       b.className = "week-tab" + (w === state.selectedWeek ? " active" : "");
-      const date = fromISO(w);
+      const date = parseISODate(w);
 
       const title = document.createElement("strong");
-      title.textContent = `Semaine ${weekNumber(date)}`;
+      title.textContent = `Semaine ${getWeekNumber(date)}`;
 
       const subtitle = document.createElement("small");
       subtitle.textContent = `du ${date.toLocaleDateString("fr-FR", {
@@ -229,11 +325,11 @@
       host.append(b);
     });
 
-    const current = mondayOf(today());
-    const shown = fromISO(state.selectedWeek);
+    const current = getMondayOfWeek(getToday());
+    const shown = parseISODate(state.selectedWeek);
 
-    $("#week-summary").textContent =
-      state.selectedWeek === iso(current)
+    selectElement("#week-summary").textContent =
+      state.selectedWeek === formatDateToISO(current)
         ? "La semaine en cours"
         : shown < current
           ? "Une semaine passée — ton historique est conservé"
@@ -241,9 +337,9 @@
   }
 
   function renderChapters() {
-    const host = $("#chapters-list");
+    const host = selectElement("#chapters-list");
     host.innerHTML = "";
-    chapters.forEach((ch) => {
+    CHAPTERS.forEach((ch) => {
       const card = document.createElement("article");
       card.className = "chapter-card";
       const done = Array.from({ length: ch.count }, (_, i) =>
@@ -259,8 +355,8 @@
         if (ex.status === "done") cell.classList.add("done");
         if (ex.status === "postponed") {
           cell.classList.add("postponed");
-          const due = fromISO(ex.date);
-          if (iso(mondayOf(due)) === state.selectedWeek)
+          const due = parseISODate(ex.date);
+          if (formatDateToISO(getMondayOfWeek(due)) === state.selectedWeek)
             cell.classList.add("same-week");
         }
         const number = document.createElement("span");
@@ -270,13 +366,13 @@
         cell.append(number);
 
         if (ex.status === "postponed") {
-          const due = fromISO(ex.date);
+          const due = parseISODate(ex.date);
 
           if (isNaN(due.getTime())) {
             ex.status = "todo";
             ex.date = null;
           } else {
-            const dueWeek = iso(mondayOf(due));
+            const dueWeek = formatDateToISO(getMondayOfWeek(due));
             const selected = state.selectedWeek;
 
             // Afficher le commentaire à partir de la semaine prévue
@@ -315,22 +411,22 @@
   function renderProgress() {
     let total = 0,
       done = 0;
-    chapters.forEach((ch) => {
+    CHAPTERS.forEach((ch) => {
       total += ch.count;
       for (let i = 1; i <= ch.count; i++)
         if (getExercise(ch.id, i).status === "done") done++;
     });
-    $("#progress-count").textContent = `${done} / ${total}`;
-    $("#progress-bar").style.width = `${(done / total) * 100}%`;
+    selectElement("#progress-count").textContent = `${done} / ${total}`;
+    selectElement("#progress-bar").style.width = `${(done / total) * 100}%`;
   }
 
 
 
 function renderTracking() {
-  const host = $("#tracking-content");
+  const host = selectElement("#tracking-content");
   host.innerHTML = "";
 
-  chapters.forEach((ch) => {
+  CHAPTERS.forEach((ch) => {
     const exercises = [];
 
     for (let i = 1; i <= ch.count; i++) {
@@ -383,14 +479,14 @@ function renderTracking() {
 
         const date = document.createElement("p");
         date.textContent = event.date
-          ? dateLabel(fromISO(event.date))
+          ? dateLabel(parseISODate(event.date))
           : "Date inconnue";
 
         const description = document.createElement("p");
 
         if (event.type === "postponed") {
           description.textContent = event.dueDate
-            ? `Exercice reporté au ${dateLabel(fromISO(event.dueDate))}`
+            ? `Exercice reporté au ${dateLabel(parseISODate(event.dueDate))}`
             : "Exercice reporté";
         } else if (event.type === "done") {
           description.textContent = "Exercice validé ✓";
@@ -429,10 +525,10 @@ function renderTracking() {
 
 
 function renderPlanning() {
-  const host = $('#daily-planning');
+  const host = selectElement('#daily-planning');
   host.innerHTML = '';
 
-  const start = mondayOf(today());
+  const start = getMondayOfWeek(getToday());
 
   // Afficher 3 semaines
   for (let week = 0; week < 3; week++) {
@@ -448,7 +544,7 @@ function renderPlanning() {
     const summary = document.createElement('summary');
     summary.className = 'planning-week-title';
     summary.textContent =
-      `Semaine ${weekNumber(weekStart)} · du ${
+      `Semaine ${getWeekNumber(weekStart)} · du ${
         weekStart.toLocaleDateString('fr-FR', {
           day: 'numeric',
           month: 'short'
@@ -469,10 +565,10 @@ function renderPlanning() {
     // Afficher les 7 jours de la semaine
     for (let i = 0; i < 7; i++) {
       const date = addDays(weekStart, i);
-      const dateKey = iso(date);
+      const dateKey = formatDateToISO(date);
       const tasks = [];
 
-      chapters.forEach(ch => {
+      CHAPTERS.forEach(ch => {
         for (let n = 1; n <= ch.count; n++) {
           const ex = getExercise(ch.id, n);
 
@@ -497,7 +593,7 @@ function renderPlanning() {
 
       day.append(heading);
 
-      if (dateKey === iso(today())) {
+      if (dateKey === formatDateToISO(getToday())) {
         day.classList.add('is-today');
       }
 
@@ -546,53 +642,52 @@ function renderPlanning() {
 }
 
 
-  let active = null;
   function openExercise(ch, n) {
     active = { ch, n };
     const ex = getExercise(ch.id, n);
-    $("#dialog-title").textContent = `${ch.title} · Exercice ${n}`;
-    $("#dialog-date").textContent =
+    selectElement("#dialog-title").textContent = `${ch.title} · Exercice ${n}`;
+    selectElement("#dialog-date").textContent =
       ex.status === "postponed"
-        ? `Prévu le ${dateLabel(fromISO(ex.date))}`
+        ? `Prévu le ${dateLabel(parseISODate(ex.date))}`
         : ex.status === "done"
           ? "Cet exercice est validé."
           : "À toi de jouer !";
-    $("#postpone-choice").value = "";
-    $('#postpone-comment').value = ex.comment || '';
-    $("#exercise-dialog").showModal();
+    selectElement("#postpone-choice").value = "";
+    selectElement('#postpone-comment').value = ex.comment || '';
+    selectElement("#exercise-dialog").showModal();
   }
   function closeDialog() {
-    $("#exercise-dialog").close();
+    selectElement("#exercise-dialog").close();
   }
-  $("#mark-done").addEventListener("click", () => {
+  selectElement("#mark-done").addEventListener("click", () => {
     if (!active) return;
     setExercise(active.ch.id, active.n, { status: "done", date: null });
     closeDialog();
     render();
     toast("Exercice validé, bravo !");
   });
-  $("#reset-exercise").addEventListener("click", () => {
+  selectElement("#reset-exercise").addEventListener("click", () => {
     if (!active) return;
     setExercise(active.ch.id, active.n, { status: "todo", date: null });
     closeDialog();
     render();
     toast("Exercice remis dans la liste.");
   });
-  $("#confirm-postpone").addEventListener("click", () => {
+  selectElement("#confirm-postpone").addEventListener("click", () => {
     if (!active) return;
-    const choice = $("#postpone-choice").value;
+    const choice = selectElement("#postpone-choice").value;
     if (!choice) {
       toast("Choisis une échéance pour continuer.");
       return;
     }
-    const base = today();
+    const base = getToday();
     let due;
     if (choice === "business") due = addBusinessDays(base, 2);
     else if (choice === "week") due = addDays(base, 7);
     else due = addDays(base, 14);
-    const dueISO = iso(due);
+    const dueISO = formatDateToISO(due);
     ensureWeek(due);
-    setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: $('#postpone-comment').value.trim() });
+    setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: selectElement('#postpone-comment').value.trim() });
     closeDialog();
     render();
     toast(`Exercice reporté au ${dateLabel(due)}.`);
@@ -619,10 +714,10 @@ function renderPlanning() {
       .querySelectorAll(".page")
       .forEach((p) => p.classList.toggle("active", p.id === `page-${page}`));
   }
-  $("#back-to-week").addEventListener("click", () => switchPage("chapters"));
-  $("#add-week").addEventListener("click", () => {
-    const latest = fromISO(state.weeks[state.weeks.length - 1]);
-    const next = iso(addDays(latest, 7));
+  selectElement("#back-to-week").addEventListener("click", () => switchPage("chapters"));
+  selectElement("#add-week").addEventListener("click", () => {
+    const latest = parseISODate(state.weeks[state.weeks.length - 1]);
+    const next = formatDateToISO(addDays(latest, 7));
     state.weeks.push(next);
     state.weeks.sort();
     state.selectedWeek = next;
@@ -630,7 +725,7 @@ function renderPlanning() {
     render();
     toast("Une nouvelle semaine a été ajoutée.");
   });
-  $("#export-data").addEventListener("click", () => {
+  selectElement("#export-data").addEventListener("click", () => {
     save();
     const blob = new Blob([JSON.stringify(state, null, 2)], {
       type: "application/json",
@@ -638,12 +733,12 @@ function renderPlanning() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `mes-revisions-sauvegarde-${iso(today())}.json`;
+    a.download = `mes-revisions-sauvegarde-${formatDateToISO(getToday())}.json`;
     a.click();
     URL.revokeObjectURL(url);
     toast("Sauvegarde téléchargée.");
   });
-  $("#import-data").addEventListener("change", async (e) => {
+  selectElement("#import-data").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     try {
@@ -670,4 +765,3 @@ function renderPlanning() {
   });
   ensureFutureWeeks();
   render();
-})();
