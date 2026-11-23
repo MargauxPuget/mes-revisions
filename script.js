@@ -158,40 +158,29 @@ const getWeekNumber = (date) => {
 	return weekNumber;
 };
 
+// Affiche le nom complet du jour (exemple : lundi).
+const formatDayLabel = (date) => {
+  const dayLabel = date.toLocaleDateString("fr-FR", {
+    weekday: "long",
+  });
+
+  return dayLabel;
+};
+
+// Affiche une date complète (exemple : 23 novembre 2026).
+const formatDateLabel = (date) => {
+  const dateLabel = date.toLocaleDateString("fr-FR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+
+  return dateLabel;
+};
 
 
 
 
-
-
-
-
-  const weekLabel = (d) => {
-    if (!(d instanceof Date) || isNaN(d.getTime())) {
-      return "Semaine à définir";
-    }
-
-    return `Semaine du ${d.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "short",
-    })}`;
-  };
-  const dayLabel = (d) => d.toLocaleDateString("fr-FR", { weekday: "long" });
-  const dateLabel = (d) =>
-    d.toLocaleDateString("fr-FR", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    });
-  const makeInitial = () => {
-    const first = getMondayOfWeek(getToday());
-    return {
-      version: 1,
-      weeks: [0, 1, 2].map((i) => formatDateToISO(addDays(first, i * 7))),
-      selectedWeek: formatDateToISO(first),
-      exercises: {},
-    };
-  };
 
   try {
     state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || makeInitial();
@@ -386,7 +375,7 @@ const getWeekNumber = (date) => {
             if (selected === dueWeek) {
               // Semaine prévue : case normale avec le jour
               const small = document.createElement("small");
-              small.textContent = dayLabel(due);
+              small.textContent = formatDayLabel(due);
               cell.append(small);
             } else if (selected < dueWeek) {
               // Semaines avant la date prévue : diagonale
@@ -395,7 +384,7 @@ const getWeekNumber = (date) => {
             // Semaines après la date prévue : case normale, sans jour
           }
 
-          cell.title = `Reporté au ${dateLabel(due)}`;
+          cell.title = `Reporté au ${formatDateLabel(due)}`;
         } else
           cell.title =
             ex.status === "done"
@@ -479,14 +468,14 @@ function renderTracking() {
 
         const date = document.createElement("p");
         date.textContent = event.date
-          ? dateLabel(parseISODate(event.date))
+          ? formatDateLabel(parseISODate(event.date))
           : "Date inconnue";
 
         const description = document.createElement("p");
 
         if (event.type === "postponed") {
           description.textContent = event.dueDate
-            ? `Exercice reporté au ${dateLabel(parseISODate(event.dueDate))}`
+            ? `Exercice reporté au ${formatDateLabel(parseISODate(event.dueDate))}`
             : "Exercice reporté";
         } else if (event.type === "done") {
           description.textContent = "Exercice validé ✓";
@@ -585,10 +574,10 @@ function renderPlanning() {
       day.className = 'day-card';
 
       const heading = document.createElement('h4');
-      heading.textContent = dayLabel(date);
+      heading.textContent = formatDayLabel(date);
 
       const sub = document.createElement('span');
-      sub.textContent = dateLabel(date);
+      sub.textContent = formatDayLabel(date);
       heading.append(sub);
 
       day.append(heading);
@@ -648,7 +637,7 @@ function renderPlanning() {
     selectElement("#dialog-title").textContent = `${ch.title} · Exercice ${n}`;
     selectElement("#dialog-date").textContent =
       ex.status === "postponed"
-        ? `Prévu le ${dateLabel(parseISODate(ex.date))}`
+        ? `Prévu le ${formatDateLabel(parseISODate(ex.date))}`
         : ex.status === "done"
           ? "Cet exercice est validé."
           : "À toi de jouer !";
@@ -690,7 +679,7 @@ function renderPlanning() {
     setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: selectElement('#postpone-comment').value.trim() });
     closeDialog();
     render();
-    toast(`Exercice reporté au ${dateLabel(due)}.`);
+    toast(`Exercice reporté au ${formatDateLabel(due)}.`);
   });
   function render() {
     ensureFutureWeeks();
