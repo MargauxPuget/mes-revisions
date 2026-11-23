@@ -23,6 +23,9 @@ const POSTPONE_DELAYS = {
   twoWeeks: 14
 };
 
+// Durée d'affichage d'une notification en millisecondes.
+const NOTIFICATION_DURATION = 2600;
+
 
 /* =========================================================
    2. VARIABLES GLOBALES
@@ -33,6 +36,9 @@ let state = null;
 
 // Exercice actuellement sélectionné
 let active = null;
+
+// Identifiant du minuteur de la notification en cours.
+let notificationTimeout = null;
 
 
 /* =========================================================
@@ -252,13 +258,27 @@ const formatDateLabel = (date) => {
     }
     return monday;
   }
-  function toast(msg) {
-    const el = selectElement("#toast");
-    el.textContent = msg;
-    el.classList.add("show");
-    clearTimeout(toast.timer);
-    toast.timer = setTimeout(() => el.classList.remove("show"), 2600);
-  }
+
+
+/* ---------------------------------------------------------
+   3.3 NOTIFICATIONS
+   --------------------------------------------------------- */
+
+// Affiche une notification temporaire à l'écran.
+const showNotification = (message) => {
+  const notificationElement = selectElement("#toast");
+
+  notificationElement.textContent = message;
+  notificationElement.classList.add("show");
+
+  clearTimeout(notificationTimeout);
+
+  notificationTimeout = setTimeout(() => {
+    notificationElement.classList.remove("show");
+  }, NOTIFICATION_DURATION);
+};
+
+
   function weekEnd(w) {
     return addDays(parseISODate(w), 6);
   }
@@ -615,7 +635,7 @@ function renderPlanning() {
           });
 
           render();
-          toast('Exercice validé, bravo !');
+          showNotification('Exercice validé, bravo !');
         });
 
         row.append(done);
@@ -653,20 +673,20 @@ function renderPlanning() {
     setExercise(active.ch.id, active.n, { status: "done", date: null });
     closeDialog();
     render();
-    toast("Exercice validé, bravo !");
+    showNotification("Exercice validé, bravo !");
   });
   selectElement("#reset-exercise").addEventListener("click", () => {
     if (!active) return;
     setExercise(active.ch.id, active.n, { status: "todo", date: null });
     closeDialog();
     render();
-    toast("Exercice remis dans la liste.");
+    showNotification("Exercice remis dans la liste.");
   });
   selectElement("#confirm-postpone").addEventListener("click", () => {
     if (!active) return;
     const choice = selectElement("#postpone-choice").value;
     if (!choice) {
-      toast("Choisis une échéance pour continuer.");
+      showNotification("Choisis une échéance pour continuer.");
       return;
     }
     const base = getToday();
@@ -679,7 +699,7 @@ function renderPlanning() {
     setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: selectElement('#postpone-comment').value.trim() });
     closeDialog();
     render();
-    toast(`Exercice reporté au ${formatDateLabel(due)}.`);
+    showNotification(`Exercice reporté au ${formatDateLabel(due)}.`);
   });
   function render() {
     ensureFutureWeeks();
@@ -712,7 +732,7 @@ function renderPlanning() {
     state.selectedWeek = next;
     save();
     render();
-    toast("Une nouvelle semaine a été ajoutée.");
+    showNotification("Une nouvelle semaine a été ajoutée.");
   });
   selectElement("#export-data").addEventListener("click", () => {
     save();
@@ -725,7 +745,7 @@ function renderPlanning() {
     a.download = `mes-revisions-sauvegarde-${formatDateToISO(getToday())}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast("Sauvegarde téléchargée.");
+    showNotification("Sauvegarde téléchargée.");
   });
   selectElement("#import-data").addEventListener("change", async (e) => {
     const file = e.target.files[0];
@@ -744,9 +764,9 @@ function renderPlanning() {
       ensureFutureWeeks();
       save();
       render();
-      toast("Sauvegarde restaurée.");
+      showNotification("Sauvegarde restaurée.");
     } catch {
-      toast(
+      showNotification(
         "Ce fichier ne semble pas être une sauvegarde Mes révisions valide.",
       );
     }
