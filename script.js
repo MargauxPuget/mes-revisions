@@ -184,14 +184,6 @@ const formatDateLabel = (date) => {
   return dateLabel;
 };
 
-/* ---------------------------------------------------------
-  4. GESTION DES DONNÉES
-  --------------------------------------------------------- */
-
-/* ---------------------------------------------------------
-  4.1 INITIALISATION
-  --------------------------------------------------------- */
-
 // Crée les données initiales de l'application.
 function createInitialState() {
   const currentMonday = getMondayOfWeek(getToday());
@@ -780,19 +772,32 @@ function renderPlanning() {
     render();
     showNotification("Une nouvelle semaine a été ajoutée.");
   });
-  selectElement("#export-data").addEventListener("click", () => {
-    saveState();
-    const blob = new Blob([JSON.stringify(state, null, 2)], {
-      type: "application/json",
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `mes-revisions-sauvegarde-${formatDateToISO(getToday())}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    showNotification("Sauvegarde téléchargée.");
+
+// Exporte les données de l'application dans un fichier JSON.
+function exportState() {
+  saveState();
+
+  const backupBlob = new Blob([JSON.stringify(state, null, 2)], {
+    type: "application/json",
   });
+
+  const downloadUrl = URL.createObjectURL(backupBlob);
+  const downloadLink = document.createElement("a");
+
+  downloadLink.href = downloadUrl;
+  downloadLink.download = `mes-revisions-sauvegarde-${formatDateToISO(getToday())}.json`;
+
+  downloadLink.click();
+
+  URL.revokeObjectURL(downloadUrl);
+
+  showNotification("Sauvegarde téléchargée.");
+}
+
+// Déclenche l'exportation lorsque l'utilisateur clique sur le bouton.
+selectElement("#export-data").addEventListener("click", exportState);
+
+
   selectElement("#import-data").addEventListener("change", async (e) => {
     const file = e.target.files[0];
     if (!file) return;
