@@ -249,10 +249,13 @@ initializeState();
 
 
 
-  function save() {
-    ensureFutureWeeks();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }
+// Enregistre les données de l'application dans le stockage local.
+function saveState() {
+  ensureFutureWeeks();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+
   function key(ch, id) {
     return `${ch}:${id}`;
   }
@@ -290,7 +293,7 @@ initializeState();
       history: [...previous.history, event]
     };
 
-    save();
+    saveState();
   }
 
   function ensureWeek(date) {
@@ -370,7 +373,7 @@ const showNotification = (message) => {
 
       b.addEventListener("click", () => {
         state.selectedWeek = w;
-        save();
+        saveState();
         render();
       });
 
@@ -751,7 +754,7 @@ function renderPlanning() {
     renderProgress();
     renderPlanning();
     renderTracking();
-    save();
+    saveState();
   }
   document
     .querySelectorAll(".nav-link")
@@ -773,12 +776,12 @@ function renderPlanning() {
     state.weeks.push(next);
     state.weeks.sort();
     state.selectedWeek = next;
-    save();
+    saveState();
     render();
     showNotification("Une nouvelle semaine a été ajoutée.");
   });
   selectElement("#export-data").addEventListener("click", () => {
-    save();
+    saveState();
     const blob = new Blob([JSON.stringify(state, null, 2)], {
       type: "application/json",
     });
@@ -805,7 +808,7 @@ function renderPlanning() {
         return;
       state = imported;
       ensureFutureWeeks();
-      save();
+      saveState();
       render();
       showNotification("Sauvegarde restaurée.");
     } catch {
