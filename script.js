@@ -794,34 +794,48 @@ function exportState() {
   showNotification("Sauvegarde téléchargée.");
 }
 
+// Importe une sauvegarde JSON dans l'application.
+async function importState(event) {
+  const importInput = event.target;
+  const selectedFile = importInput.files[0];
+
+  if (!selectedFile) return;
+
+  try {
+    const importedState = JSON.parse(await selectedFile.text());
+
+    if (
+      !Array.isArray(importedState.weeks) ||
+      !importedState.exercises
+    ) {
+      throw new Error("format");
+    }
+
+    const userConfirmedImport = confirm(
+      "Restaurer cette sauvegarde ? Les données actuelles seront remplacées.",
+    );
+
+    if (userConfirmedImport) {
+      state = importedState;
+      saveState();
+      render();
+      showNotification("Sauvegarde restaurée.");
+    }
+  } catch {
+    showNotification(
+      "Ce fichier ne semble pas être une sauvegarde Mes révisions valide.",
+    );
+  } finally {
+    importInput.value = "";
+  }
+}
+
 // Déclenche l'exportation lorsque l'utilisateur clique sur le bouton.
 selectElement("#export-data").addEventListener("click", exportState);
 
 
-  selectElement("#import-data").addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    try {
-      const imported = JSON.parse(await file.text());
-      if (!Array.isArray(imported.weeks) || !imported.exercises)
-        throw new Error("format");
-      if (
-        !confirm(
-          "Restaurer cette sauvegarde ? Les données actuelles seront remplacées.",
-        )
-      )
-        return;
-      state = imported;
-      ensureFutureWeeks();
-      saveState();
-      render();
-      showNotification("Sauvegarde restaurée.");
-    } catch {
-      showNotification(
-        "Ce fichier ne semble pas être une sauvegarde Mes révisions valide.",
-      );
-    }
-    e.target.value = "";
-  });
-  ensureFutureWeeks();
-  render();
+// Déclenche l'importation lorsqu'un fichier est sélectionné.
+selectElement("#import-data").addEventListener("change", importState);
+
+ensureFutureWeeks();
+render();
