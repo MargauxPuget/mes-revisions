@@ -21,12 +21,12 @@
    - Import / export
    - Historique des exercices
 
-5. GESTION DES SEMAINES        <- à refactorer
+5. GESTION DES SEMAINES
    - Création
    - Vérification
    - Sélection
 
-6. AFFICHAGE
+6. AFFICHAGE        <- à refactorer
    - Chapitres
    - Progression
    - Planning

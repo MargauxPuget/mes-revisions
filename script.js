@@ -225,25 +225,73 @@ function initializeState() {
 initializeState();
 
 
-  function ensureFutureWeeks() {
-    const base = getMondayOfWeek(getToday());
-    const required = [0, 1, 2].map((i) => formatDateToISO(addDays(base, i * 7)));
-    required.forEach((w) => {
-      if (!state.weeks.includes(w)) state.weeks.push(w);
-    });
+// Garantit la présence des semaines nécessaires au planning.
+function ensurePlanningWeeks() {
+  const currentMonday = getMondayOfWeek(getToday());
+
+  const requiredWeeks = Array.from(
+    { length: PLANNING_WEEKS },
+    (_, weekIndex) =>
+      formatDateToISO(addDays(currentMonday, weekIndex * 7))
+  );
+
+  // Conserver uniquement les semaines avec une date valide.
+  const validWeeks = state.weeks.filter((weekStart) => {
+    return (
+      typeof weekStart === "string" &&
+      !Number.isNaN(parseISODate(weekStart).getTime())
+    );
+  });
+
+  // Conserver l'historique et ajouter les semaines nécessaires.
+  state.weeks = [...new Set([...validWeeks, ...requiredWeeks])].sort();
+
+  // Sélectionner la semaine actuelle si la sélection est invalide.
+  if (!state.weeks.includes(state.selectedWeek)) {
+    state.selectedWeek = requiredWeeks[0];
+  }
+}
+
+// Ajoute une semaine à la liste si elle n'existe pas encore.
+function ensureWeekExists(date) {
+  const weekStart = formatDateToISO(getMondayOfWeek(date));
+
+  if (!state.weeks.includes(weekStart)) {
+    state.weeks.push(weekStart);
     state.weeks.sort();
-    // Keep all historical weeks; never prune stored work.
-    if (!state.weeks.includes(state.selectedWeek))
-      state.selectedWeek = formatDateToISO(base);
   }
 
+  return weekStart;
+}
+
+// Sélectionne une semaine et actualise l'affichage.
+function selectWeek(weekStart) {
+  if (!state.weeks.includes(weekStart)) return;
+
+  state.selectedWeek = weekStart;
+
+  render();
+}
+
+// Crée et sélectionne une nouvelle semaine après la dernière.
+function addNextWeek() {
+  const latestWeek = state.weeks[state.weeks.length - 1];
+  const nextWeekDate = addDays(parseISODate(latestWeek), 7);
+  const nextWeek = ensureWeekExists(nextWeekDate);
+
+  state.selectedWeek = nextWeek;
+
+  render();
+
+  showNotification("Une nouvelle semaine a été ajoutée.");
+}
 
 
 
 
 // Enregistre les données de l'application dans le stockage local.
 function saveState() {
-  ensureFutureWeeks();
+  ensurePlanningWeeks();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
@@ -299,18 +347,6 @@ function setExercise(chapterId, exerciseNumber, updatedValues) {
   saveState();
 }
 
-
-
-  function ensureWeek(date) {
-    const monday = formatDateToISO(getMondayOfWeek(date));
-    if (!state.weeks.includes(monday)) {
-      state.weeks.push(monday);
-      state.weeks.sort();
-    }
-    return monday;
-  }
-
-
 /* ---------------------------------------------------------
    3.3 NOTIFICATIONS
    --------------------------------------------------------- */
@@ -330,71 +366,61 @@ const showNotification = (message) => {
 };
 
 
-  function weekEnd(w) {
-    return addDays(parseISODate(w), 6);
-  }
+// Affiche les onglets permettant de sélectionner une semaine.
+function renderTabs() {
+  const tabsContainer = selectElement("#week-tabs");
+  tabsContainer.innerHTML = "";
 
-  function renderTabs() {
-    const host = selectElement("#week-tabs");
-    host.innerHTML = "";
+  state.weeks.forEach((weekStart) => {
+    const weekDate = parseISODate(weekStart);
 
-    // Ne conserver que les semaines avec une date valide
-    state.weeks = state.weeks.filter(
-      (w) => typeof w === "string" && !isNaN(parseISODate(w).getTime()),
+    const tabButton = document.createElement("button");
+    tabButton.className =
+      "week-tab" +
+      (weekStart === state.selectedWeek ? " active" : "");
+
+    const title = document.createElement("strong");
+    title.textContent = `Semaine ${getWeekNumber(weekDate)}`;
+
+    const subtitle = document.createElement("small");
+    subtitle.textContent = `du ${weekDate.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short",
+    })}`;
+
+    tabButton.append(title, subtitle);
+
+    tabButton.setAttribute("role", "tab");
+    tabButton.setAttribute(
+      "aria-selected",
+      String(weekStart === state.selectedWeek)
     );
 
-    // Éliminer les doublons
-    state.weeks = [...new Set(state.weeks)].sort();
-
-    // Garantir qu'il existe au moins une semaine
-    if (state.weeks.length === 0) {
-      const first = formatDateToISO(getMondayOfWeek(getToday()));
-      state.weeks = [first];
-      state.selectedWeek = first;
-    }
-
-    // Corriger la semaine sélectionnée si elle est invalide
-    if (!state.weeks.includes(state.selectedWeek)) {
-      state.selectedWeek = formatDateToISO(getMondayOfWeek(getToday()));
-    }
-
-    state.weeks.forEach((w) => {
-      const b = document.createElement("button");
-      b.className = "week-tab" + (w === state.selectedWeek ? " active" : "");
-      const date = parseISODate(w);
-
-      const title = document.createElement("strong");
-      title.textContent = `Semaine ${getWeekNumber(date)}`;
-
-      const subtitle = document.createElement("small");
-      subtitle.textContent = `du ${date.toLocaleDateString("fr-FR", {
-        day: "numeric",
-        month: "short",
-      })}`;
-
-      b.append(title, subtitle);
-      b.setAttribute("role", "tab");
-      b.setAttribute("aria-selected", String(w === state.selectedWeek));
-
-      b.addEventListener("click", () => {
-        state.selectedWeek = w;
-        saveState();
-        render();
-      });
-
-      host.append(b);
+    tabButton.addEventListener("click", () => {
+      selectWeek(weekStart);
     });
 
-    const current = getMondayOfWeek(getToday());
-    const shown = parseISODate(state.selectedWeek);
+    tabsContainer.append(tabButton);
+  });
 
-    selectElement("#week-summary").textContent =
-      state.selectedWeek === formatDateToISO(current)
-        ? "La semaine en cours"
-        : shown < current
-          ? "Une semaine passée — ton historique est conservé"
-          : "Une semaine à venir";
-  }
+  const currentMonday = getMondayOfWeek(getToday());
+  const selectedWeekDate = parseISODate(state.selectedWeek);
+
+  selectElement("#week-summary").textContent =
+    state.selectedWeek === formatDateToISO(currentMonday)
+      ? "La semaine en cours"
+      : selectedWeekDate < currentMonday
+        ? "Une semaine passée — ton historique est conservé"
+        : "Une semaine à venir";
+}
+
+
+
+
+
+
+
+
 
   function renderChapters() {
     const host = selectElement("#chapters-list");
@@ -746,21 +772,22 @@ function renderPlanning() {
     else if (choice === "week") due = addDays(base, 7);
     else due = addDays(base, 14);
     const dueISO = formatDateToISO(due);
-    ensureWeek(due);
+    ensureWeekExists(due);
     setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: selectElement('#postpone-comment').value.trim() });
     closeDialog();
     render();
     showNotification(`Exercice reporté au ${formatDateLabel(due)}.`);
   });
-  function render() {
-    ensureFutureWeeks();
-    renderTabs();
-    renderChapters();
-    renderProgress();
-    renderPlanning();
-    renderTracking();
-    saveState();
-  }
+
+function render() {
+  ensurePlanningWeeks();
+  renderTabs();
+  renderChapters();
+  renderProgress();
+  renderPlanning();
+  renderTracking();
+  saveState();
+}
   document
     .querySelectorAll(".nav-link")
     .forEach((b) =>
@@ -775,16 +802,8 @@ function renderPlanning() {
       .forEach((p) => p.classList.toggle("active", p.id === `page-${page}`));
   }
   selectElement("#back-to-week").addEventListener("click", () => switchPage("chapters"));
-  selectElement("#add-week").addEventListener("click", () => {
-    const latest = parseISODate(state.weeks[state.weeks.length - 1]);
-    const next = formatDateToISO(addDays(latest, 7));
-    state.weeks.push(next);
-    state.weeks.sort();
-    state.selectedWeek = next;
-    saveState();
-    render();
-    showNotification("Une nouvelle semaine a été ajoutée.");
-  });
+
+selectElement("#add-week").addEventListener("click", addNextWeek);
 
 // Exporte les données de l'application dans un fichier JSON.
 function exportState() {
@@ -850,5 +869,5 @@ selectElement("#export-data").addEventListener("click", exportState);
 // Déclenche l'importation lorsqu'un fichier est sélectionné.
 selectElement("#import-data").addEventListener("change", importState);
 
-ensureFutureWeeks();
+ensurePlanningWeeks();
 render();
