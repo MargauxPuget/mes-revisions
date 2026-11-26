@@ -19,9 +19,9 @@
    - Initialisation
    - Sauvegarde
    - Import / export
-   - Historique des exercices        <- à refactorer
+   - Historique des exercices
 
-5. GESTION DES SEMAINES
+5. GESTION DES SEMAINES        <- à refactorer
    - Création
    - Vérification
    - Sélection

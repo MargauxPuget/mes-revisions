@@ -248,45 +248,58 @@ function saveState() {
 }
 
 
-  function key(ch, id) {
-    return `${ch}:${id}`;
-  }
+// Construit l'identifiant unique d'un exercice.
+function createExerciseKey(chapterId, exerciseNumber) {
+  return `${chapterId}:${exerciseNumber}`;
+}
 
-  function getExercise(ch, id) {
-    const ex = state.exercises[key(ch, id)] || {
+// Récupère un exercice et garantit la présence de son historique.
+function getExercise(chapterId, exerciseNumber) {
+  const exercise =
+    state.exercises[createExerciseKey(chapterId, exerciseNumber)] || {
       status: "todo",
       date: null
     };
 
-    // Garantir la présence d'un historique
-    if (!Array.isArray(ex.history)) {
-      ex.history = [];
-    }
-
-    return ex;
+  if (!Array.isArray(exercise.history)) {
+    exercise.history = [];
   }
 
-  function setExercise(ch, id, value) {
-    const exerciseKey = key(ch, id);
-    const previous = getExercise(ch, id);
+  return exercise;
+}
 
-    // Créer une nouvelle entrée dans l'historique
-    const event = {
-      type: value.status,
-      date: formatDateToISO(getToday()),
-      dueDate: value.status === "postponed" ? value.date : null,
-      comment: value.status === "postponed" ? (value.comment || "") : ""
-    };
+// Crée un événement retraçant une modification de l'exercice.
+function createExerciseHistoryEvent(updatedValues) {
+  return {
+    type: updatedValues.status,
+    date: formatDateToISO(getToday()),
+    dueDate:
+      updatedValues.status === "postponed"
+        ? updatedValues.date
+        : null,
+    comment:
+      updatedValues.status === "postponed"
+        ? updatedValues.comment || ""
+        : ""
+  };
+}
 
-    // Mettre à jour l'exercice sans perdre son historique
-    state.exercises[exerciseKey] = {
-      ...previous,
-      ...value,
-      history: [...previous.history, event]
-    };
+// Met à jour un exercice en conservant son historique.
+function setExercise(chapterId, exerciseNumber, updatedValues) {
+  const exerciseKey = createExerciseKey(chapterId, exerciseNumber);
+  const previousExercise = getExercise(chapterId, exerciseNumber);
+  const historyEvent = createExerciseHistoryEvent(updatedValues);
 
-    saveState();
-  }
+  state.exercises[exerciseKey] = {
+    ...previousExercise,
+    ...updatedValues,
+    history: [...previousExercise.history, historyEvent]
+  };
+
+  saveState();
+}
+
+
 
   function ensureWeek(date) {
     const monday = formatDateToISO(getMondayOfWeek(date));
