@@ -422,310 +422,399 @@ function renderTabs() {
 
 
 
-  function renderChapters() {
-    const host = selectElement("#chapters-list");
-    host.innerHTML = "";
-    CHAPTERS.forEach((ch) => {
-      const card = document.createElement("article");
-      card.className = "chapter-card";
-      const done = Array.from({ length: ch.count }, (_, i) =>
-        getExercise(ch.id, i + 1),
-      ).filter((x) => x.status === "done").length;
-      card.innerHTML = `<div class="chapter-head"><div><h3>${ch.title}</h3><p>${ch.count} exercices pour progresser</p></div><span class="chapter-count">${done} / ${ch.count} validés</span></div><div class="exercise-grid"></div>`;
-      const grid = card.querySelector(".exercise-grid");
-      for (let i = 1; i <= ch.count; i++) {
-        const ex = getExercise(ch.id, i),
-          cell = document.createElement("button");
-        cell.className = "exercise-cell";
-        cell.type = "button";
-        if (ex.status === "done") cell.classList.add("done");
-        if (ex.status === "postponed") {
-          cell.classList.add("postponed");
-          const due = parseISODate(ex.date);
-          if (formatDateToISO(getMondayOfWeek(due)) === state.selectedWeek)
-            cell.classList.add("same-week");
-        }
-        const number = document.createElement("span");
-        number.className = 'cell-number';
-        number.textContent = i;
 
-        cell.append(number);
 
-        if (ex.status === "postponed") {
-          const due = parseISODate(ex.date);
+// Affiche les chapitres et les cases de leurs exercices.
+function renderChapters() {
+  const chaptersContainer = selectElement("#chapters-list");
+  chaptersContainer.innerHTML = "";
 
-          if (isNaN(due.getTime())) {
-            ex.status = "todo";
-            ex.date = null;
-          } else {
-            const dueWeek = formatDateToISO(getMondayOfWeek(due));
-            const selected = state.selectedWeek;
+  CHAPTERS.forEach((chapter) => {
+    const chapterCard = document.createElement("article");
+    chapterCard.className = "chapter-card";
 
-            // Afficher le commentaire à partir de la semaine prévue
-            if (selected >= dueWeek && ex.comment) {
-              const comment = document.createElement("small");
-              comment.className = "exercise-comment";
-              comment.textContent = ex.comment;
-              cell.append(comment);
-            }
+    const chapterHeader = document.createElement("div");
+    chapterHeader.className = "chapter-head";
 
-            if (selected === dueWeek) {
-              // Semaine prévue : case normale avec le jour
-              const small = document.createElement("small");
-              small.textContent = formatDayLabel(due);
-              cell.append(small);
-            } else if (selected < dueWeek) {
-              // Semaines avant la date prévue : diagonale
-              cell.classList.add("postponed-diagonal");
-            }
-            // Semaines après la date prévue : case normale, sans jour
+    const chapterInformation = document.createElement("div");
+
+    const chapterTitle = document.createElement("h3");
+    chapterTitle.textContent = chapter.title;
+
+    const chapterDescription = document.createElement("p");
+    chapterDescription.textContent =
+      `${chapter.count} exercices pour progresser`;
+
+    chapterInformation.append(chapterTitle, chapterDescription);
+
+    const chapterProgress = document.createElement("span");
+    chapterProgress.className = "chapter-count";
+
+    chapterHeader.append(chapterInformation, chapterProgress);
+    chapterCard.append(chapterHeader);
+
+    const exercisesGrid = document.createElement("div");
+    exercisesGrid.className = "exercise-grid";
+
+    let completedExercises = 0;
+
+    for (
+      let exerciseNumber = 1;
+      exerciseNumber <= chapter.count;
+      exerciseNumber++
+    ) {
+      const exercise = getExercise(chapter.id, exerciseNumber);
+
+      const exerciseCell = document.createElement("button");
+      exerciseCell.className = "exercise-cell";
+      exerciseCell.type = "button";
+
+      if (exercise.status === "done") {
+        completedExercises++;
+        exerciseCell.classList.add("done");
+        exerciseCell.title = "Exercice validé";
+      } else if (exercise.status === "postponed") {
+        exerciseCell.classList.add("postponed");
+      } else {
+        exerciseCell.title = "Cliquer pour gérer cet exercice";
+      }
+
+      const exerciseNumberLabel = document.createElement("span");
+      exerciseNumberLabel.className = "cell-number";
+      exerciseNumberLabel.textContent = exerciseNumber;
+
+      exerciseCell.append(exerciseNumberLabel);
+
+      if (exercise.status === "postponed") {
+        const dueDate = parseISODate(exercise.date);
+        const isValidDueDate = !Number.isNaN(dueDate.getTime());
+
+        if (!isValidDueDate) {
+          exercise.status = "todo";
+          exercise.date = null;
+          exerciseCell.classList.remove("postponed");
+          exerciseCell.title = "Cliquer pour gérer cet exercice";
+        } else {
+          const dueWeek = formatDateToISO(getMondayOfWeek(dueDate));
+          const selectedWeek = state.selectedWeek;
+
+          if (dueWeek === selectedWeek) {
+            exerciseCell.classList.add("same-week");
           }
 
-          cell.title = `Reporté au ${formatDateLabel(due)}`;
-        } else
-          cell.title =
-            ex.status === "done"
-              ? "Exercice validé"
-              : "Cliquer pour gérer cet exercice";
-        cell.addEventListener("click", () => openExercise(ch, i));
-        grid.append(cell);
+          // Afficher le commentaire à partir de la semaine prévue.
+          if (selectedWeek >= dueWeek && exercise.comment) {
+            const exerciseComment = document.createElement("small");
+            exerciseComment.className = "exercise-comment";
+            exerciseComment.textContent = exercise.comment;
+
+            exerciseCell.append(exerciseComment);
+          }
+
+          if (selectedWeek === dueWeek) {
+            const dueDayLabel = document.createElement("small");
+            dueDayLabel.textContent = formatDayLabel(dueDate);
+
+            exerciseCell.append(dueDayLabel);
+          } else if (selectedWeek < dueWeek) {
+            exerciseCell.classList.add("postponed-diagonal");
+          }
+
+          exerciseCell.title =
+            `Reporté au ${formatDateLabel(dueDate)}`;
+        }
       }
-      host.append(card);
-    });
-  }
 
-  function renderProgress() {
-    let total = 0,
-      done = 0;
-    CHAPTERS.forEach((ch) => {
-      total += ch.count;
-      for (let i = 1; i <= ch.count; i++)
-        if (getExercise(ch.id, i).status === "done") done++;
-    });
-    selectElement("#progress-count").textContent = `${done} / ${total}`;
-    selectElement("#progress-bar").style.width = `${(done / total) * 100}%`;
-  }
+      exerciseCell.addEventListener("click", () => {
+        openExercise(chapter, exerciseNumber);
+      });
 
+      exercisesGrid.append(exerciseCell);
+    }
 
+    chapterProgress.textContent =
+      `${completedExercises} / ${chapter.count} validés`;
 
+    chapterCard.append(exercisesGrid);
+    chaptersContainer.append(chapterCard);
+  });
+}
+
+// Calcule et affiche la progression globale des exercices.
+function renderProgress() {
+  let totalExercises = 0;
+  let completedExercises = 0;
+
+  CHAPTERS.forEach((chapter) => {
+    totalExercises += chapter.count;
+
+    for (
+      let exerciseNumber = 1;
+      exerciseNumber <= chapter.count;
+      exerciseNumber++
+    ) {
+      const exercise = getExercise(chapter.id, exerciseNumber);
+
+      if (exercise.status === "done") {
+        completedExercises++;
+      }
+    }
+  });
+
+  const progressPercentage =
+    (completedExercises / totalExercises) * 100;
+
+  selectElement("#progress-count").textContent =
+    `${completedExercises} / ${totalExercises}`;
+
+  selectElement("#progress-bar").style.width =
+    `${progressPercentage}%`;
+}
+
+// Affiche l'historique des modifications de chaque exercice.
 function renderTracking() {
-  const host = selectElement("#tracking-content");
-  host.innerHTML = "";
+  const trackingContainer = selectElement("#tracking-content");
+  trackingContainer.innerHTML = "";
 
-  CHAPTERS.forEach((ch) => {
-    const exercises = [];
+  CHAPTERS.forEach((chapter) => {
+    const exercisesWithHistory = [];
 
-    for (let i = 1; i <= ch.count; i++) {
-      const ex = getExercise(ch.id, i);
+    for (
+      let exerciseNumber = 1;
+      exerciseNumber <= chapter.count;
+      exerciseNumber++
+    ) {
+      const exercise = getExercise(chapter.id, exerciseNumber);
 
-      if (ex.history && ex.history.length > 0) {
-        exercises.push({
-          number: i,
-          history: ex.history
+      if (exercise.history.length > 0) {
+        exercisesWithHistory.push({
+          number: exerciseNumber,
+          history: exercise.history
         });
       }
     }
 
-    if (exercises.length === 0) return;
+    if (exercisesWithHistory.length === 0) return;
 
-    // Accordéon du chapitre (niveau 1)
-    const chapter = document.createElement("details");
-    chapter.className = "tracking-chapter";
-    chapter.open = false;
+    const chapterAccordion = document.createElement("details");
+    chapterAccordion.className = "tracking-chapter";
+    chapterAccordion.open = false;
 
-    const title = document.createElement("summary");
-    title.className = "tracking-chapter-title";
-    title.textContent = ch.title;
+    const chapterTitle = document.createElement("summary");
+    chapterTitle.className = "tracking-chapter-title";
+    chapterTitle.textContent = chapter.title;
 
-    chapter.append(title);
+    chapterAccordion.append(chapterTitle);
 
-    // Contenu du chapitre : accordéons des exercices
     const chapterContent = document.createElement("div");
     chapterContent.className = "tracking-chapter-content";
 
-    exercises.forEach((exercise) => {
-      const card = document.createElement("details");
-      card.className = "tracking-exercise";
-      card.open = false;
+    exercisesWithHistory.forEach((exercise) => {
+      const exerciseAccordion = document.createElement("details");
+      exerciseAccordion.className = "tracking-exercise";
+      exerciseAccordion.open = false;
 
-      const heading = document.createElement("summary");
-      heading.className = "tracking-exercise-title";
-      heading.textContent = `Exercice ${exercise.number}`;
+      const exerciseTitle = document.createElement("summary");
+      exerciseTitle.className = "tracking-exercise-title";
+      exerciseTitle.textContent = `Exercice ${exercise.number}`;
 
-      card.append(heading);
+      exerciseAccordion.append(exerciseTitle);
 
-      const history = document.createElement("div");
-      history.className = "tracking-history";
+      const historyContainer = document.createElement("div");
+      historyContainer.className = "tracking-history";
 
-      const events = [...exercise.history].reverse();
+      const historyEvents = [...exercise.history].reverse();
 
-      events.forEach((event) => {
-        const item = document.createElement("div");
-        item.className = `tracking-event ${event.type}`;
+      historyEvents.forEach((historyEvent) => {
+        const eventContainer = document.createElement("div");
+        eventContainer.className =
+          `tracking-event ${historyEvent.type}`;
 
-        const date = document.createElement("p");
-        date.textContent = event.date
-          ? formatDateLabel(parseISODate(event.date))
-          : "Date inconnue";
+        const eventDate = document.createElement("p");
+        const parsedEventDate = parseISODate(historyEvent.date);
 
-        const description = document.createElement("p");
+        eventDate.textContent =
+          !Number.isNaN(parsedEventDate.getTime())
+            ? formatDateLabel(parsedEventDate)
+            : "Date inconnue";
 
-        if (event.type === "postponed") {
-          description.textContent = event.dueDate
-            ? `Exercice reporté au ${formatDateLabel(parseISODate(event.dueDate))}`
-            : "Exercice reporté";
-        } else if (event.type === "done") {
-          description.textContent = "Exercice validé ✓";
+        const eventDescription = document.createElement("p");
+
+        if (historyEvent.type === "postponed") {
+          const parsedDueDate = parseISODate(historyEvent.dueDate);
+
+          eventDescription.textContent =
+            !Number.isNaN(parsedDueDate.getTime())
+              ? `Exercice reporté au ${formatDateLabel(parsedDueDate)}`
+              : "Exercice reporté";
+        } else if (historyEvent.type === "done") {
+          eventDescription.textContent = "Exercice validé ✓";
         } else {
-          description.textContent = "Exercice remis à faire";
+          eventDescription.textContent = "Exercice remis à faire";
         }
 
-        item.append(date, description);
+        eventContainer.append(eventDate, eventDescription);
 
-        if (event.comment) {
-          const comment = document.createElement("p");
-          comment.className = "tracking-comment";
-          comment.textContent = event.comment;
-          item.append(comment);
+        if (historyEvent.comment) {
+          const eventComment = document.createElement("p");
+          eventComment.className = "tracking-comment";
+          eventComment.textContent = historyEvent.comment;
+
+          eventContainer.append(eventComment);
         }
 
-        history.append(item);
+        historyContainer.append(eventContainer);
       });
 
-      card.append(history);
-      chapterContent.append(card);
+      exerciseAccordion.append(historyContainer);
+      chapterContent.append(exerciseAccordion);
     });
 
-    chapter.append(chapterContent);
-    host.append(chapter);
+    chapterAccordion.append(chapterContent);
+    trackingContainer.append(chapterAccordion);
   });
 
-  if (host.children.length === 0) {
-    host.textContent =
+  if (trackingContainer.children.length === 0) {
+    trackingContainer.textContent =
       "Aucun historique pour le moment. Tes prochains reports et validations apparaîtront ici.";
   }
 }
 
-
-
-
-
+// Affiche les exercices reportés dans le planning des semaines à venir.
 function renderPlanning() {
-  const host = selectElement('#daily-planning');
-  host.innerHTML = '';
+  const planningContainer = selectElement("#daily-planning");
+  planningContainer.innerHTML = "";
 
-  const start = getMondayOfWeek(getToday());
+  const currentMonday = getMondayOfWeek(getToday());
 
-  // Afficher 3 semaines
-  for (let week = 0; week < 3; week++) {
-    const weekStart = addDays(start, week * 7);
+  for (
+    let weekIndex = 0;
+    weekIndex < PLANNING_WEEKS;
+    weekIndex++
+  ) {
+    const weekStart = addDays(currentMonday, weekIndex * 7);
     const weekEnd = addDays(weekStart, 6);
 
-    // Créer le bloc déroulant
-    const weekSection = document.createElement('details');
-    weekSection.className = 'planning-week';
-    weekSection.open = week === 0;
+    const weekSection = document.createElement("details");
+    weekSection.className = "planning-week";
+    weekSection.open = weekIndex === 0;
 
-    // Titre de la semaine
-    const summary = document.createElement('summary');
-    summary.className = 'planning-week-title';
-    summary.textContent =
-      `Semaine ${getWeekNumber(weekStart)} · du ${
-        weekStart.toLocaleDateString('fr-FR', {
-          day: 'numeric',
-          month: 'short'
-        })
-      } au ${
-        weekEnd.toLocaleDateString('fr-FR', {
-          day: 'numeric',
-          month: 'short'
-        })
-      }`;
+    const weekTitle = document.createElement("summary");
+    weekTitle.className = "planning-week-title";
 
-    weekSection.append(summary);
+    const formattedWeekStart = weekStart.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short"
+    });
 
-    // Conteneur des journées
-    const daysContainer = document.createElement('div');
-    daysContainer.className = 'planning-week-days';
+    const formattedWeekEnd = weekEnd.toLocaleDateString("fr-FR", {
+      day: "numeric",
+      month: "short"
+    });
 
-    // Afficher les 7 jours de la semaine
-    for (let i = 0; i < 7; i++) {
-      const date = addDays(weekStart, i);
-      const dateKey = formatDateToISO(date);
-      const tasks = [];
+    weekTitle.textContent =
+      `Semaine ${getWeekNumber(weekStart)} · du ${formattedWeekStart} au ${formattedWeekEnd}`;
 
-      CHAPTERS.forEach(ch => {
-        for (let n = 1; n <= ch.count; n++) {
-          const ex = getExercise(ch.id, n);
+    weekSection.append(weekTitle);
+
+    const daysContainer = document.createElement("div");
+    daysContainer.className = "planning-week-days";
+
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+      const currentDate = addDays(weekStart, dayIndex);
+      const currentDateISO = formatDateToISO(currentDate);
+      const scheduledExercises = [];
+
+      CHAPTERS.forEach((chapter) => {
+        for (
+          let exerciseNumber = 1;
+          exerciseNumber <= chapter.count;
+          exerciseNumber++
+        ) {
+          const exercise = getExercise(chapter.id, exerciseNumber);
 
           if (
-            ex.status === 'postponed' &&
-            ex.date === dateKey
+            exercise.status === "postponed" &&
+            exercise.date === currentDateISO
           ) {
-            tasks.push({ ch, n, ex });
+            scheduledExercises.push({
+              chapter,
+              exerciseNumber
+            });
           }
         }
       });
 
-      const day = document.createElement('article');
-      day.className = 'day-card';
+      const dayCard = document.createElement("article");
+      dayCard.className = "day-card";
 
-      const heading = document.createElement('h4');
-      heading.textContent = formatDayLabel(date);
+      const dayTitle = document.createElement("h4");
+      dayTitle.textContent = formatDayLabel(currentDate);
 
-      const sub = document.createElement('span');
-      sub.textContent = formatDayLabel(date);
-      heading.append(sub);
+      const daySubtitle = document.createElement("span");
+      daySubtitle.textContent = formatDayLabel(currentDate);
 
-      day.append(heading);
+      dayTitle.append(daySubtitle);
+      dayCard.append(dayTitle);
 
-      if (dateKey === formatDateToISO(getToday())) {
-        day.classList.add('is-today');
+      if (currentDateISO === formatDateToISO(getToday())) {
+        dayCard.classList.add("is-today");
       }
 
-      if (tasks.length === 0) {
-        const p = document.createElement('p');
-        p.className = 'empty-day';
-        p.textContent = 'Aucun exercice programmé pour le moment.';
-        day.append(p);
+      if (scheduledExercises.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.className = "empty-day";
+        emptyMessage.textContent =
+          "Aucun exercice programmé pour le moment.";
+
+        dayCard.append(emptyMessage);
       }
 
-      tasks.forEach(t => {
-        const row = document.createElement('div');
-        row.className = 'day-task';
+      scheduledExercises.forEach((scheduledExercise) => {
+        const taskRow = document.createElement("div");
+        taskRow.className = "day-task";
 
-        const dot = document.createElement('i');
-        dot.className = 'task-dot';
-        row.append(dot);
+        const taskIndicator = document.createElement("i");
+        taskIndicator.className = "task-dot";
 
-        const label = document.createElement('span');
-        label.textContent = `${t.ch.title} — exercice ${t.n}`;
-        row.append(label);
+        const taskLabel = document.createElement("span");
+        taskLabel.textContent =
+          `${scheduledExercise.chapter.title} — exercice ${scheduledExercise.exerciseNumber}`;
 
-        const done = document.createElement('button');
-        done.textContent = 'Valider ✓';
+        const validateButton = document.createElement("button");
+        validateButton.textContent = "Valider ✓";
 
-        done.addEventListener('click', () => {
-          setExercise(t.ch.id, t.n, {
-            status: 'done',
-            date: null
-          });
+        validateButton.addEventListener("click", () => {
+          setExercise(
+            scheduledExercise.chapter.id,
+            scheduledExercise.exerciseNumber,
+            {
+              status: "done",
+              date: null
+            }
+          );
 
           render();
-          showNotification('Exercice validé, bravo !');
+          showNotification("Exercice validé, bravo !");
         });
 
-        row.append(done);
-        day.append(row);
+        taskRow.append(
+          taskIndicator,
+          taskLabel,
+          validateButton
+        );
+
+        dayCard.append(taskRow);
       });
 
-      daysContainer.append(day);
+      daysContainer.append(dayCard);
     }
 
     weekSection.append(daysContainer);
-    host.append(weekSection);
+    planningContainer.append(weekSection);
   }
 }
+
 
 
   function openExercise(ch, n) {

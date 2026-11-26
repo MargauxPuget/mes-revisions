@@ -26,13 +26,13 @@
    - Vérification
    - Sélection
 
-6. AFFICHAGE        <- à refactorer
+6. AFFICHAGE
    - Chapitres
    - Progression
    - Planning
    - Suivi
 
-7. GESTION DES INTERACTIONS
+7. GESTION DES INTERACTIONS        <- à refactorer
    - Ouverture des exercices
    - Validation
    - Report
