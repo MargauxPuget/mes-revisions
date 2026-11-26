@@ -184,16 +184,37 @@ const formatDateLabel = (date) => {
   return dateLabel;
 };
 
+/* ---------------------------------------------------------
+  4. GESTION DES DONNÉES
+  --------------------------------------------------------- */
 
+/* ---------------------------------------------------------
+  4.1 INITIALISATION
+  --------------------------------------------------------- */
 
+// Crée les données initiales de l'application.
+function createInitialState() {
+  const currentMonday = getMondayOfWeek(getToday());
 
+  const initialWeeks = Array.from(
+    { length: PLANNING_WEEKS },
+    (_, weekIndex) =>
+      formatDateToISO(addDays(currentMonday, weekIndex * 7))
+  );
+
+  return {
+    weeks: initialWeeks,
+    selectedWeek: initialWeeks[0],
+    exercises: {}
+  };
+}
 
   try {
-    state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || makeInitial();
+    state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || createInitialState();
   } catch {
-    state = makeInitial();
+    state = createInitialState();
   }
-  if (!Array.isArray(state.weeks) || !state.exercises) state = makeInitial();
+  if (!Array.isArray(state.weeks) || !state.exercises) state = createInitialState();
   state.weeks = state.weeks.filter((v, i, a) => a.indexOf(v) === i).sort();
   function ensureFutureWeeks() {
     const base = getMondayOfWeek(getToday());
