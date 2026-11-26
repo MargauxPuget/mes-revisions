@@ -17,8 +17,8 @@
 
 4. GESTION DES DONNÉES
    - Initialisation
-   - Sauvegarde        <- à refactorer
-   - Import / export
+   - Sauvegarde
+   - Import / export        <- à refactorer
    - Historique des exercices
 
 5. GESTION DES SEMAINES

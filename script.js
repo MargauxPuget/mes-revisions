@@ -209,13 +209,30 @@ function createInitialState() {
   };
 }
 
+// Charge les données enregistrées ou crée un état initial.
+function initializeState() {
+  let savedState = null;
+
   try {
-    state = JSON.parse(localStorage.getItem(STORAGE_KEY)) || createInitialState();
+    savedState = JSON.parse(localStorage.getItem(STORAGE_KEY));
   } catch {
-    state = createInitialState();
+    savedState = null;
   }
-  if (!Array.isArray(state.weeks) || !state.exercises) state = createInitialState();
-  state.weeks = state.weeks.filter((v, i, a) => a.indexOf(v) === i).sort();
+
+  const isValidState =
+    savedState &&
+    Array.isArray(savedState.weeks) &&
+    savedState.exercises;
+
+  state = isValidState ? savedState : createInitialState();
+
+  // Éliminer les semaines en double et les trier.
+  state.weeks = [...new Set(state.weeks)].sort();
+}
+
+initializeState();
+
+
   function ensureFutureWeeks() {
     const base = getMondayOfWeek(getToday());
     const required = [0, 1, 2].map((i) => formatDateToISO(addDays(base, i * 7)));
@@ -227,6 +244,11 @@ function createInitialState() {
     if (!state.weeks.includes(state.selectedWeek))
       state.selectedWeek = formatDateToISO(base);
   }
+
+
+
+
+
   function save() {
     ensureFutureWeeks();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
