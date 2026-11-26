@@ -16,7 +16,7 @@
    - Notifications
 
 4. GESTION DES DONNÉES
-   - Initialisation
+   - Initialisation        <- à refactorer
    - Sauvegarde
    - Import / export
    - Historique des exercices
