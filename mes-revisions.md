@@ -32,12 +32,12 @@
    - Planning
    - Suivi
 
-7. GESTION DES INTERACTIONS        <- à refactorer
+7. GESTION DES INTERACTIONS
    - Ouverture des exercices
    - Validation
    - Report
    - Remise à zéro
 
-8. NAVIGATION
+8. NAVIGATION        <- à refactorer
 
 9. INITIALISATION

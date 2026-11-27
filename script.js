@@ -34,8 +34,8 @@ const NOTIFICATION_DURATION = 2600;
 // Données de l'application
 let state = null;
 
-// Exercice actuellement sélectionné
-let active = null;
+// Exercice actuellement sélectionné dans la fenêtre de gestion.
+let activeExercise = null;
 
 // Identifiant du minuteur de la notification en cours.
 let notificationTimeout = null;
@@ -785,17 +785,10 @@ function renderPlanning() {
         validateButton.textContent = "Valider ✓";
 
         validateButton.addEventListener("click", () => {
-          setExercise(
+          markExerciseAsDone(
             scheduledExercise.chapter.id,
-            scheduledExercise.exerciseNumber,
-            {
-              status: "done",
-              date: null
-            }
+            scheduledExercise.exerciseNumber
           );
-
-          render();
-          showNotification("Exercice validé, bravo !");
         });
 
         taskRow.append(
@@ -817,56 +810,144 @@ function renderPlanning() {
 
 
 
-  function openExercise(ch, n) {
-    active = { ch, n };
-    const ex = getExercise(ch.id, n);
-    selectElement("#dialog-title").textContent = `${ch.title} · Exercice ${n}`;
-    selectElement("#dialog-date").textContent =
-      ex.status === "postponed"
-        ? `Prévu le ${formatDateLabel(parseISODate(ex.date))}`
-        : ex.status === "done"
-          ? "Cet exercice est validé."
-          : "À toi de jouer !";
-    selectElement("#postpone-choice").value = "";
-    selectElement('#postpone-comment').value = ex.comment || '';
-    selectElement("#exercise-dialog").showModal();
+
+// Ouvre la fenêtre de gestion d'un exercice.
+function openExercise(chapter, exerciseNumber) {
+  activeExercise = {
+    chapter,
+    exerciseNumber
+  };
+
+  const exercise = getExercise(chapter.id, exerciseNumber);
+
+  selectElement("#dialog-title").textContent =
+    `${chapter.title} · Exercice ${exerciseNumber}`;
+
+  selectElement("#dialog-date").textContent =
+    exercise.status === "postponed"
+      ? `Prévu le ${formatDateLabel(parseISODate(exercise.date))}`
+      : exercise.status === "done"
+        ? "Cet exercice est validé."
+        : "À toi de jouer !";
+
+  selectElement("#postpone-choice").value = "";
+  selectElement("#postpone-comment").value = exercise.comment || "";
+
+  selectElement("#exercise-dialog").showModal();
+}
+
+// Ferme la fenêtre de gestion d'un exercice.
+function closeExerciseDialog() {
+  selectElement("#exercise-dialog").close();
+  activeExercise = null;
+}
+
+// Valide un exercice et actualise l'affichage.
+function markExerciseAsDone(chapterId, exerciseNumber) {
+  setExercise(chapterId, exerciseNumber, {
+    status: "done",
+    date: null
+  });
+
+  render();
+  showNotification("Exercice validé, bravo !");
+}
+
+// Remet un exercice dans la liste des exercices à faire.
+function resetActiveExercise() {
+  if (!activeExercise) return;
+
+  const chapterId = activeExercise.chapter.id;
+  const exerciseNumber = activeExercise.exerciseNumber;
+
+  closeExerciseDialog();
+
+  setExercise(chapterId, exerciseNumber, {
+    status: "todo",
+    date: null
+  });
+
+  render();
+  showNotification("Exercice remis dans la liste.");
+}
+
+// Calcule la nouvelle date en fonction du délai de report choisi.
+function calculatePostponeDate(choice) {
+  const today = getToday();
+
+  if (choice === "business") {
+    return addBusinessDays(today, POSTPONE_DELAYS.businessDays);
   }
-  function closeDialog() {
-    selectElement("#exercise-dialog").close();
+
+  if (choice === "week") {
+    return addDays(today, POSTPONE_DELAYS.oneWeek);
   }
-  selectElement("#mark-done").addEventListener("click", () => {
-    if (!active) return;
-    setExercise(active.ch.id, active.n, { status: "done", date: null });
-    closeDialog();
-    render();
-    showNotification("Exercice validé, bravo !");
+
+  return addDays(today, POSTPONE_DELAYS.twoWeeks);
+}
+
+// Reporte l'exercice sélectionné à la date choisie.
+function postponeActiveExercise() {
+  if (!activeExercise) return;
+
+  const postponeChoice = selectElement("#postpone-choice").value;
+
+  if (!postponeChoice) {
+    showNotification("Choisis une échéance pour continuer.");
+    return;
+  }
+
+  const dueDate = calculatePostponeDate(postponeChoice);
+  const dueDateISO = formatDateToISO(dueDate);
+
+  const chapterId = activeExercise.chapter.id;
+  const exerciseNumber = activeExercise.exerciseNumber;
+  const comment = selectElement("#postpone-comment").value.trim();
+
+  ensureWeekExists(dueDate);
+
+  setExercise(chapterId, exerciseNumber, {
+    status: "postponed",
+    date: dueDateISO,
+    comment
   });
-  selectElement("#reset-exercise").addEventListener("click", () => {
-    if (!active) return;
-    setExercise(active.ch.id, active.n, { status: "todo", date: null });
-    closeDialog();
-    render();
-    showNotification("Exercice remis dans la liste.");
-  });
-  selectElement("#confirm-postpone").addEventListener("click", () => {
-    if (!active) return;
-    const choice = selectElement("#postpone-choice").value;
-    if (!choice) {
-      showNotification("Choisis une échéance pour continuer.");
-      return;
-    }
-    const base = getToday();
-    let due;
-    if (choice === "business") due = addBusinessDays(base, 2);
-    else if (choice === "week") due = addDays(base, 7);
-    else due = addDays(base, 14);
-    const dueISO = formatDateToISO(due);
-    ensureWeekExists(due);
-    setExercise(active.ch.id, active.n, { status: "postponed", date: dueISO, comment: selectElement('#postpone-comment').value.trim() });
-    closeDialog();
-    render();
-    showNotification(`Exercice reporté au ${formatDateLabel(due)}.`);
-  });
+
+  closeExerciseDialog();
+
+  render();
+
+  showNotification(
+    `Exercice reporté au ${formatDateLabel(dueDate)}.`
+  );
+}
+
+// Gère la validation depuis la fenêtre d'un exercice.
+selectElement("#mark-done").addEventListener("click", () => {
+  if (!activeExercise) return;
+
+  const chapterId = activeExercise.chapter.id;
+  const exerciseNumber = activeExercise.exerciseNumber;
+
+  closeExerciseDialog();
+
+  markExerciseAsDone(chapterId, exerciseNumber);
+});
+
+// Gère la remise à zéro depuis la fenêtre d'un exercice.
+selectElement("#reset-exercise").addEventListener(
+  "click",
+  resetActiveExercise
+);
+
+// Gère le report depuis la fenêtre d'un exercice.
+selectElement("#confirm-postpone").addEventListener(
+  "click",
+  postponeActiveExercise
+);
+
+
+
+
 
 function render() {
   ensurePlanningWeeks();
