@@ -38,7 +38,7 @@
    - Report
    - Remise à zéro
 
-8. NAVIGATION
+8. NAVIGATION   <- à remprendre là (pas fait)
 
 9. INITIALISATION
 
